@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Charcoal World Clocks</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+
+    <section class="clock-grid" aria-label="World clocks">
+      <article class="clock-card" data-timezone="America/New_York" data-label="Maine">
+        <div class="card-topline">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="zone-label">Maine</span>
+        </div>
+        <div class="time" aria-live="polite">--:--:-- --</div>
+        <div class="date">Loading date…</div>
+        <div class="meta">
+          <span class="timezone">Eastern Time</span>
+          <span class="offset">UTC --</span>
+        </div>
+      </article>
+
+      <article class="clock-card featured" data-timezone="Asia/Ho_Chi_Minh" data-label="Vietnam">
+        <div class="card-topline">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="zone-label">Vietnam</span>
+        </div>
+        <div class="time" aria-live="polite">--:--:-- --</div>
+        <div class="date">Loading date…</div>
+        <div class="meta">
+          <span class="timezone">Vietnam Time</span>
+          <span class="offset">UTC --</span>
+        </div>
+      </article>
+
+      <article class="clock-card" data-timezone="America/Los_Angeles" data-label="Seattle">
+        <div class="card-topline">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="zone-label">Seattle</span>
+        </div>
+        <div class="time" aria-live="polite">--:--:-- --</div>
+        <div class="date">Loading date…</div>
+        <div class="meta">
+          <span class="timezone">Pacific Time</span>
+          <span class="offset">UTC --</span>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      <span id="last-updated">Updating…</span>
+      <button id="toggle-format" type="button" aria-pressed="false">Use 24-hour time</button>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
