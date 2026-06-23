@@ -1,58 +1,2132 @@
+<!-- v1.2.10.3 -->
+
 <!DOCTYPE html>
+
 
 <html data-bs-theme="dark">
 
+
 <head>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-
-    <title>Sammie's Lab!</title>
-
     <style>
-        body {
+        :root {
+            --accent-lavender: #b8a1ff;
+            --accent-lavender-soft: #c7b6ff;
+            --accent-lavender-muted: #a996e8;
+            --glow-lavender-soft: rgba(184, 161, 255, 0.18);
+            --glow-lavender: rgba(184, 161, 255, 0.24);
+            --accent-primary: var(--accent-lavender-soft);
+            --accent-primary-muted: var(--accent-lavender-muted);
+            --accent-primary-deep: var(--accent-lavender);
+            --accent-underline: #d8ccff;
+            --glow-primary-soft: rgba(184, 161, 255, 0.15);
+            --glow-primary: rgba(184, 161, 255, 0.2);
+            --glow-primary-strong: rgba(184, 161, 255, 0.24);
+            --glow-primary-inner: rgba(184, 161, 255, 0.08);
+        }
+
+        ::selection {
+            background: rgba(184, 161, 255, 0.32);
+            color: #f1ecff;
+        }
+
+        body, html {
+            background-color: #181818 !important;
+        }
+
+        td {
+            border-top: solid 1px rgb(100, 100, 100) !important;
+            padding: 8px;
+        }
+
+        .file_display{
+            background-color: #1f1f1f !important;
+            border: 1px solid;
+            border-color: #393939;
+            border-radius: 10px;
+            color: #cccccc;
+            text-align: justify;
+            box-shadow: 0px 0px 30px rgba(15, 15, 15, 1);
+            overflow: auto;
+            user-select: contain;
+        }
+        .underline {
+            text-decoration: underline !important;
+            color: var(--accent-underline) !important;
+        }
+        code {
+            background-color: #1f202f;
+            border: 1px solid #373745;
+            border-radius: 4px;
+        }
+        .fixed-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 400px;
+            max-width: fit-content;
+            height: 100dvh !important;
+            border-right: solid 1px #393939;
+            padding: 10px;
+            background-color: #1f1f1f !important;
+            overflow: auto;
+        }
+        .fixed-sidebar-collapsed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 70px;
+            height: 100dvh !important;
+            border-right: solid 1px #393939;
+            padding: 10px;
+        }
+
+        .sidebar-open {
+            padding-left: 400px;
+        }
+
+        .sidebar-closed {
+            padding-left: 70px;
+        }
+
+        .alt-div {
+            background-color: #1f1f1f !important;
+        }
+
+        .display_image {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: auto;
+            height: auto;
+            max-width: none;
+            max-height: none;
+            cursor: grab;
+            flex: 0 0 auto;
+        }
+
+        .display_image:active{
+            cursor: grabbing;
+        }
+
+        .zoom-control {
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .folder-label { cursor: pointer; user-select: none; }
+        .folder-children { margin-left: 14px; padding-left: 10px; border-left: 1px solid #393939; }
+        .file_item { cursor: pointer; }
+
+        #file_list_div ul {
+            list-style: none;
+            margin-left: 0;
+            padding-left: 14px;
+        }
+
+        #file_list_div li {
+            list-style: none;
+        }
+
+        .folder-label,
+        .file_item {
+            padding: 2px 0;
+        }
+
+        .folder-label {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .folder-label::before {
+            content: "";
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-right: 8px;
+
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 6px solid var(--accent-primary-deep);
+
+            transition: transform 0.15s ease;
+        }
+
+        .folder-label.expanded::before {
+            transform: rotate(90deg);
+        }
+
+        .pane-toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pane-manager-btn {
+            white-space: nowrap;
+        }
+
+        #pane_container {
             display: flex;
             flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .pane-row {
+            display: flex;
+            gap: 0px;
+            align-items: stretch;
+            justify-content: center;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            width: 100%;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        body.compact-rows {
+            --compact-pane-height: 39dvh;
+            overflow: hidden;
+        }
+
+        body.compact-rows .pane-content {
+            height: var(--compact-pane-height) !important;
+            max-height: var(--compact-pane-height) !important;
+            min-height: 120px;
+        }
+
+        body.compact-rows .viewer-pane:fullscreen .pane-content,
+        body.compact-rows .viewer-pane:-webkit-full-screen .pane-content,
+        body.compact-rows .viewer-pane.fullscreen-image-mode:fullscreen .pane-content,
+        body.compact-rows .viewer-pane.fullscreen-image-mode:-webkit-full-screen .pane-content {
+            height: calc(100vh - 96px) !important;
+            max-height: calc(100vh - 96px) !important;
+            min-height: 0 !important;
+        }
+
+        body.gui-hidden #sidebar,
+        body.gui-hidden .pane-header,
+        body.gui-hidden .pane-controls-row {
+            display: none !important;
+        }
+
+        body.gui-hidden #main_body {
+            padding-left: 0 !important;
+        }
+
+        body.gui-hidden #content_cintainer {
+            max-width: 100vw !important;
+            width: 100vw !important;
+            margin-top: 0 !important;
+        }
+
+        body.gui-hidden .viewer-pane {
+            padding-top: 0 !important;
+        }
+
+        body.gui-hidden:not(.compact-rows) .pane-content {
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+        }
+
+        body.gui-hidden.compact-rows .pane-content {
+            height: var(--compact-pane-height) !important;
+            max-height: var(--compact-pane-height) !important;
+        }
+
+        body.gui-hidden .viewer-pane.fullscreen-image-mode:fullscreen .pane-content,
+        body.gui-hidden .viewer-pane.fullscreen-image-mode:-webkit-full-screen .pane-content,
+        body.gui-hidden .viewer-pane:fullscreen .pane-content,
+        body.gui-hidden .viewer-pane:-webkit-full-screen .pane-content {
+            height: 100vh !important;
+            max-height: 100vh !important;
+        }
+
+        body.gui-hidden .viewer-pane.active {
+            border-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .viewer-pane {
+            flex: 0 1 auto;
+            width: 320px;
+            min-width: 0;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+            background-color: transparent !important;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 6px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, width 0.15s ease;
+        }
+
+        /* .viewer-pane.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px var(--glow-primary);
+        } */
+
+        .pane-header {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            background-color: #181818;
+            gap: 10px;
+            margin-bottom: 8px;
         }
-        .display-card {
-            background-color: #1F1F1F;
-            border-radius: 20px;
-            /* border-color: #393939; */
-            border: 1px solid #393939;
-            margin: 20px;
-            margin-top: 30px;
-            box-shadow: 0px 0px 10px #202020;
-            padding: 10px;
-            /* width: 30dvw;  */
-            width: fit-content; 
+
+        .pane-title {
+            color: var(--accent-primary);
+            font-size: 0.95rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+            text-shadow: 0 0 8px var(--glow-primary-soft);
         }
-        .lav-btn {
-            background-color: #A996E8;
-            border: 1px solid #6F6396;
-            margin-left: 5px;
-            margin-right: 5px;
+
+        .pane-close {
+            flex: 0 0 auto;
         }
-        
+
+        .pane-content {
+            min-height: 220px;
+            height: 86dvh;
+            max-height: 86dvh;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+
+        .pane-content.image-mode {
+            padding: 1 !important;
+            overflow: auto;
+        }
+
+        .pane-content.text-mode,
+        .pane-content.docx-mode {
+            padding: 16px !important;
+            overflow: auto;
+            text-align: left !important;
+            word-break: break-word;
+        }
+
+        .pane-content.docx-mode {
+            background-color: #202020 !important;
+        }
+
+        .pane-content.docx-mode .docx-host {
+            min-width: 0;
+        }
+
+        .pane-content.docx-mode .docx-wrapper {
+            background: transparent !important;
+            padding: 0 !important;
+        }
+
+        .pane-content.docx-mode .docx {
+            margin: 0 auto !important;
+        }
+
+        .pane-content.docx-mode .docx > section.docx-page {
+            box-shadow: 0 10px 28px rgba(0,0,0,0.35) !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 100%;
+            transform-origin: top center;
+        }
+
+        .pane-image-stage {
+            width: 100%;
+            height: 100%;
+            min-width: 100%;
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .pane-content.sidebar_toggle {
+            cursor: pointer;
+        }
+
+        .pane-controls-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pane-slider-wrap {
+            width: min(100%, 320px);
+            margin: 0 auto;
+            display: none;
+        }
+
+        .pane-slider-wrap .row {
+            align-items: center;
+        }
+
+        .empty-pane {
+            color: #7f8b92;
+            text-align: center;
+            padding: 48px 20px;
+            font-style: italic;
+        }
+
+        #pane_menu_body {
+            display: none;
+            margin-top: 10px;
+        }
+
+        #pane_list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pane-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            /* background-color: #1f1f1f !important; */
+        }
+
+        .pane-menu-main {
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: left;
+            background-color: rgb(33, 37, 41) !important;
+            border: 1px solid rgb(73, 80, 87) !important;
+        }
+
+        #sidebarAddPaneBtn,
+        #sidebarAddRowBtn,
+        #paneMenuToggle {
+            background: linear-gradient(180deg, rgba(40, 45, 52, 1) 0%, rgba(28, 32, 37, 1) 100%) !important;
+            border: 1px solid #6f6396 !important;
+            color: #d4dde3 !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 1px 6px rgba(0,0,0,0.18);
+        }
+
+        #sidebarAddPaneBtn:hover,
+        #sidebarAddRowBtn:hover,
+        #paneMenuToggle:hover {
+            border-color: #9f8fe0 !important;
+            background: linear-gradient(180deg, rgba(48, 54, 62, 1) 0%, rgba(34, 38, 44, 1) 100%) !important;
+            color: #e6eef4 !important;
+        }
+
+        .btn-danger {
+            background-color: rgb(33, 37, 41) !important;
+            border: 1px solid rgb(73, 80, 87) !important;
+        }
+
+        .pane-menu-label {
+            display: block;
+            color: #cccccc;
+        }
+
+        .pane-menu-main.active .pane-menu-label {
+            color: var(--accent-primary);
+            text-shadow: 0 0 8px var(--glow-primary-soft);
+        }
+
+        .pane-menu-subtext {
+            display: block;
+            color: #7f8b92;
+            font-size: 0.8rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .pane-menu-main.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px var(--glow-primary-soft);
+        }
+
+        /* Only show highlight when sidebar is open */
+        .sidebar-open .viewer-pane.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px var(--glow-primary);
+        }
+
+        /* When sidebar is closed → no highlight */
+        .sidebar-closed .viewer-pane.active {
+            border-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+
+        .audio-player-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .audio-player-card {
+            width: min(100%, 680px);
+            background: linear-gradient(180deg, rgba(38, 42, 48, 0.96) 0%, rgba(26, 29, 34, 0.96) 100%);
+            border: 1px solid #3f4750;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+            padding: 24px;
+        }
+
+        .audio-player-top {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .audio-player-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background: radial-gradient(circle at 30% 30%, var(--glow-primary-strong), rgba(60, 78, 95, 0.18) 55%, rgba(24, 24, 24, 0.4) 100%);
+            border: 1px solid var(--glow-primary);
+            box-shadow: inset 0 0 18px var(--glow-primary-inner);
+            flex: 0 0 auto;
+        }
+
+        .audio-player-text {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .audio-player-label {
+            color: var(--accent-primary-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .audio-player-filename {
+            color: var(--accent-primary);
+            font-size: 1.08rem;
+            font-weight: 600;
+            line-height: 1.35;
+            word-break: break-word;
+            text-shadow: 0 0 8px rgba(184, 161, 255, 0.12);
+        }
+
+        .audio-player-subtext {
+            color: #7f8b92;
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+
+        .audio-player-controls {
+            width: 100%;
+            margin-top: 4px;
+            filter: saturate(0.92) brightness(0.95);
+        }
+
+        .audio-player-controls::-webkit-media-controls-panel {
+            background-color: #20252b;
+        }
+
+        .pane-fullscreen {
+            flex: 0 0 auto;
+        }
+
+        html.hide-cursor,
+        html.hide-cursor *,
+        body.hide-cursor,
+        body.hide-cursor *,
+        .hide-cursor,
+        .hide-cursor * {
+            cursor: none !important;
+        }
+
+        .viewer-pane:fullscreen,
+        .viewer-pane:-webkit-full-screen {
+            width: 100vw !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 8px !important;
+            border-radius: 0 !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+            background-color: #181818 !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewer-pane:fullscreen .pane-content,
+        .viewer-pane:-webkit-full-screen .pane-content {
+            height: calc(100vh - 96px) !important;
+            max-height: calc(100vh - 96px) !important;
+            min-height: 0 !important;
+        }
+
+        .viewer-pane.fullscreen-image-mode:fullscreen,
+        .viewer-pane.fullscreen-image-mode:-webkit-full-screen {
+            padding: 0 !important;
+            background-color: #181818 !important;
+        }
+
+        .viewer-pane.fullscreen-image-mode:fullscreen .pane-header,
+        .viewer-pane.fullscreen-image-mode:fullscreen .pane-controls-row,
+        .viewer-pane.fullscreen-image-mode:-webkit-full-screen .pane-header,
+        .viewer-pane.fullscreen-image-mode:-webkit-full-screen .pane-controls-row {
+            display: none !important;
+        }
+
+        .viewer-pane.fullscreen-image-mode:fullscreen .pane-content,
+        .viewer-pane.fullscreen-image-mode:-webkit-full-screen .pane-content {
+            height: 100vh !important;
+            max-height: 100vh !important;
+            min-height: 100vh !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background-color: #181818 !important;
+            padding: 0 !important;
+        }
+
+        .viewer-pane.fullscreen-image-mode:fullscreen .pane-image-stage,
+        .viewer-pane.fullscreen-image-mode:-webkit-full-screen .pane-image-stage {
+            padding: 0 !important;
+        }
+
+        .file_item,
+        .folder-label,
+        #file_list_div,
+        #file_list_div * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #root_folder {
+            color: var(--accent-primary);
+            text-shadow: 0 0 10px var(--glow-primary-soft);
+        }
+
+        .sidebar-version {
+            margin-top: 12px;
+            color: var(--accent-primary-muted);
+            font-size: 0.72rem;
+            text-align: center;
+            opacity: 0.82;
+            user-select: none;
+            text-shadow: 0 0 8px rgba(184, 161, 255, 0.14);
+        }
+
     </style>
+
+    <!-- Jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap pt 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+
+    <!-- JSZip (required by docx-preview) -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <!-- DOCX Preview -->
+    <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js"></script>
+
+    <!-- Icon img path -->
+    <link rel="icon" id="pageFavicon" type="image/x-icon" href="Icon - v3.png">
+
+    <title id="pageTitle">Sammie's Notebook</title>
 
 </head>
 
 <body>
+    <div>
+        <div class="fixed-sidebar" id="sidebar">
+                <img src="Icon - v3.png" id="sidebarToggleIcon" style="height:50px; width: 50px; margin-bottom: 5px;" onclick="toggleSidebar()">
+                <input type="file" id="md_file" class="form-control" webkitdirectory multiple />
+                <div id="pane_menu_section" style="background-color: #1f1f1f !important;">
+                    <hr>
+            
+                    <button class="btn btn-secondary w-100 text-start" id="paneMenuToggle" type="button" style="border: 1px solid rgb(73, 80, 87); background-color: rgb(33, 37, 41);">Pane Menu</button>
+                    <div id="pane_menu_body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-secondary" id="sidebarAddPaneBtn" type="button">+ Add Pane</button>
+                            <button class="btn btn-secondary" id="sidebarAddRowBtn" type="button">+ Add New Row</button>
+                        </div>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="compactRowsToggle">
+                            <label class="form-check-label" for="compactRowsToggle">Compact Rows to Fit Window</label>
+                        </div>
+                        <div id="pane_list" class="mt-2"></div>
+                    </div>
+                </div>
+                <div id="file_list_div" style="background-color: #1f1f1f !important;"><hr><h4 class="mt-2" id="root_folder"></h4></div>
+                <div class="sidebar-version" id="sidebarVersion">v1.2.10.3</div>
+        </div>
 
-    <div class="display-card" style="text-align: center;">
-        <h1 style="text-align: center; color: #C7B6FF;">Homepage Comming Soon!</h1>
-        <img src="Lab Bean.png" alt="LAB BEAN!!!" style="width: 30dvw;">
-        <div>
-            <a href="https://www.sammieslab.com/Notebook/"><button class="btn btn-secondary lav-btn">Notebook</button></a>
-            <a href="https://www.sammieslab.com/Clocks/"><button class="btn btn-secondary lav-btn">Clocks</button></a>
+        <div class="row m-1 sidebar-open" id="main_body">
+            <div class="col mx-auto mt-3" id="content_cintainer" style="min-width: 600px; max-width: 100vw;">
+                <!-- <div class="pane-toolbar">
+                    <span style="color:#7f8b92;">Click a pane to make it active. Shift-click a file to open it in another pane.</span>
+                </div> -->
+                <div id="pane_container"></div>
+            </div>
         </div>
     </div>
-
 </body>
+
+
+
+<script>
+    let selectedFiles = null;
+    let file_layout = {};
+    let paneStates = {};
+    let activePaneId = null;
+    let activeRowId = null;
+    let paneCounter = 0;
+    let rowCounter = 0;
+    let currentFullscreenPaneId = null;
+    let rootFolderTitle = "Sammie's Notebook";
+
+    function displayMDContent(MD_String, paneId){
+        document.getElementById('content_' + paneId).innerHTML =
+            marked.parse(MD_String);
+    };
+
+    function setPageTitle(fileName = null, useRootTitle = false) {
+        if (useRootTitle) {
+            $("#pageTitle").text(rootFolderTitle || "Sammie's Notebook");
+            return;
+        }
+
+        $("#pageTitle").text(fileName || rootFolderTitle || "Sammie's Notebook");
+    }
+
+    function setSidebarIcon(iconSrc = null) {
+        const sidebarIconEl = document.getElementById("sidebarToggleIcon");
+        if (!sidebarIconEl) { return; }
+
+        if (!iconSrc) {
+            sidebarIconEl.src = "Icon - v3.png";
+            return;
+        }
+
+        sidebarIconEl.src = iconSrc;
+    }
+
+    function clearDynamicFavicons() {
+        const headEl = document.head || document.getElementsByTagName("head")[0];
+        if (!headEl) { return; }
+
+        headEl.querySelectorAll('link[data-dynamic-favicon="true"]').forEach((el) => el.remove());
+    }
+
+    function appendDynamicFavicon(relValue, hrefValue, typeValue = "image/png", sizesValue = null) {
+        const headEl = document.head || document.getElementsByTagName("head")[0];
+        if (!headEl) { return; }
+
+        const linkEl = document.createElement("link");
+        linkEl.setAttribute("rel", relValue);
+        linkEl.setAttribute("href", hrefValue);
+        linkEl.setAttribute("data-dynamic-favicon", "true");
+        if (typeValue) {
+            linkEl.setAttribute("type", typeValue);
+        }
+        if (sizesValue) {
+            linkEl.setAttribute("sizes", sizesValue);
+        }
+        headEl.appendChild(linkEl);
+    }
+
+    function setChromeFriendlyFavicon(iconSrc = null, mimeType = "image/png") {
+        const baseFallback = "Icon - v3.png";
+        const finalSrc = iconSrc || baseFallback;
+
+        clearDynamicFavicons();
+
+        const faviconEl = document.getElementById("pageFavicon");
+        if (faviconEl) {
+            faviconEl.setAttribute("href", finalSrc);
+            faviconEl.setAttribute("type", mimeType || "image/png");
+        }
+
+        // Chrome is often happier if multiple favicon rel variants exist.
+        appendDynamicFavicon("icon", finalSrc, mimeType);
+        appendDynamicFavicon("shortcut icon", finalSrc, mimeType);
+        appendDynamicFavicon("apple-touch-icon", finalSrc, mimeType, "180x180");
+
+        // Force Chrome to notice the title/tab state changed.
+        const currentTitle = document.title;
+        document.title = currentTitle + " ";
+        setTimeout(() => {
+            document.title = currentTitle;
+        }, 0);
+    }
+
+    function applyRootIconToSidebarAndFavicon(file) {
+        if (!file || !file.name || !file.webkitRelativePath) { return; }
+
+        const lowerName = file.name.toLowerCase();
+        const supportedExtensions = [".png", ".jpg", ".jpeg", ".ico", ".webp", ".gif"];
+        const matchedExtension = supportedExtensions.find((ext) => lowerName.endsWith(ext));
+
+        if (!matchedExtension) { return; }
+
+        const relativePath = String(file.webkitRelativePath).replace(/\\/g, "/");
+        const pathParts = relativePath.split("/").filter(Boolean);
+
+        if (pathParts.length !== 2) { return; } // only root-folder direct children
+
+        const fileStem = lowerName.slice(0, -matchedExtension.length);
+        if (fileStem !== "icon") { return; }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataUrl = event.target.result;
+            const mimeType = file.type || (
+                matchedExtension === ".ico" ? "image/x-icon" :
+                matchedExtension === ".webp" ? "image/webp" :
+                matchedExtension === ".gif" ? "image/gif" :
+                matchedExtension === ".jpg" || matchedExtension === ".jpeg" ? "image/jpeg" :
+                "image/png"
+            );
+
+            setSidebarIcon(dataUrl);
+            setChromeFriendlyFavicon(dataUrl, mimeType);
+        };
+        reader.onerror = (error) => {
+            console.error("Error reading root icon file:", error);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function maybeApplyRootSidebarIcon(file) {
+        if (!file || !file.name || !file.webkitRelativePath) { return; }
+
+        const lowerName = file.name.toLowerCase();
+        const supportedExtensions = [".png", ".jpg", ".jpeg", ".ico", ".webp", ".gif"];
+        const matchedExtension = supportedExtensions.find((ext) => lowerName.endsWith(ext));
+
+        if (!matchedExtension) { return; }
+
+        const relativePath = String(file.webkitRelativePath).replace(/\\/g, "/");
+        const pathParts = relativePath.split("/").filter(Boolean);
+
+        if (pathParts.length !== 2) { return; } // only root-folder direct children
+
+        const fileStem = lowerName.slice(0, -matchedExtension.length);
+        if (fileStem !== "icon") { return; }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setSidebarIcon(event.target.result);
+        };
+        reader.onerror = (error) => {
+            console.error("Error reading root icon file:", error);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function setPaneModeClass(paneId, modeName) {
+        const contentEl = document.getElementById("content_" + paneId);
+        if (!contentEl) { return; }
+
+        contentEl.classList.remove("image-mode", "text-mode", "docx-mode");
+        if (modeName) {
+            contentEl.classList.add(modeName);
+        }
+    }
+
+    function markPaneKind(paneId, kind) {
+        const paneEl = document.getElementById("pane_" + paneId);
+        const state = getPaneState(paneId);
+        if (!paneEl || !state) { return; }
+
+        paneEl.classList.remove("pane-kind-empty", "pane-kind-text", "pane-kind-image", "pane-kind-audio", "pane-kind-docx");
+        paneEl.classList.add("pane-kind-" + kind);
+        state.pane_kind = kind;
+    }
+
+    function getPaneState(paneId) {
+        return paneStates[paneId];
+    }
+
+    function getRowIdsInOrder() {
+        return $("#pane_container .pane-row").map(function () {
+            return $(this).data("rowid");
+        }).get();
+    }
+
+    function createRow(addInitialPane = true) {
+        const rowId = "r" + (++rowCounter);
+        $("#pane_container").append('<div class="pane-row" id="row_' + rowId + '" data-rowid="' + rowId + '"></div>');
+        activeRowId = rowId;
+
+        if (addInitialPane) {
+            return addPane(rowId);
+        }
+
+        renderPaneMenu();
+        return rowId;
+    }
+
+
+    function getAudioMimeType(fileName) {
+        const lowerName = (fileName || "").toLowerCase();
+        if (lowerName.endsWith(".mp3")) { return "audio/mpeg"; }
+        if (lowerName.endsWith(".wav")) { return "audio/wav"; }
+        if (lowerName.endsWith(".ogg")) { return "audio/ogg"; }
+        return "audio/mpeg";
+    }
+
+    function updatePaneFullscreenClass(paneId) {
+        const state = getPaneState(paneId);
+        const paneEl = document.getElementById("pane_" + paneId);
+        if (!paneEl || !state) { return; }
+        paneEl.classList.toggle("fullscreen-image-mode", !!state.image_mode);
+    }
+
+    async function togglePaneFullscreen(paneId) {
+        const paneEl = document.getElementById("pane_" + paneId);
+        if (!paneEl) { return; }
+
+        const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
+        if (fullscreenEl === paneEl) {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+            return;
+        }
+
+        updatePaneFullscreenClass(paneId);
+        setActivePane(paneId);
+
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+
+        if (paneEl.requestFullscreen) {
+            await paneEl.requestFullscreen();
+        } else if (paneEl.webkitRequestFullscreen) {
+            paneEl.webkitRequestFullscreen();
+        }
+        currentFullscreenPaneId = paneId;
+        setTimeout(updateAllPaneImageScales, 0);
+    }
+
+
+    async function toggleAppFullscreen() {
+        const docEl = document.documentElement;
+        const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
+
+        if (fullscreenEl) {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+            return;
+        }
+
+        if (docEl.requestFullscreen) {
+            await docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+        }
+    }
+
+
+    function setActivePane(paneId) {
+        if (!paneId || !paneStates[paneId]) { return; }
+
+        activePaneId = paneId;
+        const parentRow = $("#pane_" + paneId).closest(".pane-row").data("rowid");
+        if (parentRow) {
+            activeRowId = parentRow;
+        }
+
+        $(".viewer-pane").removeClass("active");
+        $("#pane_" + paneId).addClass("active");
+        renderPaneMenu();
+    }
+
+    function updateCloseButtons() {
+        const paneCount = Object.keys(paneStates).length;
+        $(".pane-close").prop("disabled", paneCount <= 1);
+        $(".pane-menu-remove").prop("disabled", paneCount <= 1);
+    }
+
+    function getPaneIdsInOrder() {
+        return $("#pane_container .pane-row .viewer-pane").map(function () {
+            return $(this).data("paneid");
+        }).get();
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function renderPaneMenu() {
+        const paneIds = getPaneIdsInOrder();
+        const paneCount = paneIds.length;
+        const paneList = $("#pane_list");
+        paneList.empty();
+
+        paneIds.forEach((paneId, index) => {
+            const state = getPaneState(paneId);
+            const currentFileName = state && state.currentFile ? state.currentFile.name : "Empty";
+            const currentFilePath = state && state.currentFile ? (state.currentFile.webkitRelativePath || state.currentFile.name) : "Empty";
+            const safeCurrentFilePath = escapeHtml(currentFilePath);
+
+            paneList.append(`
+                <div class="pane-menu-item">
+                    <button class="btn btn-secondary pane-menu-main ${activePaneId === paneId ? 'active' : ''}" data-paneid="${paneId}" type="button">
+                        <span class="pane-menu-label">Pane ${index + 1}${activePaneId === paneId ? " • Active" : ""}</span>
+                        <span class="pane-menu-subtext" title="${safeCurrentFilePath}">${safeCurrentFilePath}</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm pane-menu-remove" data-paneid="${paneId}" type="button" ${paneCount <= 1 ? "disabled" : ""}><b>✕</b></button>
+                </div>
+            `);
+        });
+    }
+
+    function attachPaneInteractions(paneId) {
+        const contentEl = document.getElementById("content_" + paneId);
+        let mouseDown = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        contentEl.addEventListener('mousedown', (e) => {
+            const state = getPaneState(paneId);
+            if (!state || !state.image_mode) { return; }
+
+            mouseDown = true;
+            startX = e.pageX - contentEl.offsetLeft;
+            startY = e.pageY - contentEl.offsetTop;
+            scrollLeft = contentEl.scrollLeft;
+            scrollTop = contentEl.scrollTop;
+            e.preventDefault();
+        });
+
+        contentEl.addEventListener('mouseup', () => {
+            mouseDown = false;
+        });
+
+        contentEl.addEventListener('mouseleave', () => {
+            mouseDown = false;
+        });
+
+        contentEl.addEventListener('mousemove', (e) => {
+            const state = getPaneState(paneId);
+            if (!state || !state.image_mode || !mouseDown) return;
+
+            e.preventDefault();
+
+            const x = e.pageX - contentEl.offsetLeft;
+            const y = e.pageY - contentEl.offsetTop;
+
+            const walkX = (x - startX);
+            const walkY = (y - startY);
+
+            contentEl.scrollLeft = scrollLeft - walkX;
+            contentEl.scrollTop = scrollTop - walkY;
+        });
+
+        contentEl.addEventListener("wheel", function (e) {
+            const state = getPaneState(paneId);
+            if (!state || !state.image_mode) return;
+
+            e.preventDefault();
+
+            const direction = (e.deltaY > 0) ? -1 : 1;
+            const step = 10;
+
+            const sliderEl = $("#scale-slider_" + paneId);
+            let current = parseInt(sliderEl.val(), 10);
+            let next = current + (direction * step);
+
+            const min = parseInt(sliderEl.attr("min"), 10);
+            const max = parseInt(sliderEl.attr("max"), 10);
+
+            if (next < min) next = min;
+            if (next > max) next = max;
+
+            sliderEl.val(next);
+            sliderPane(paneId, 0);
+        }, { passive: false });
+    }
+
+    function addPane(targetRowId = activeRowId) {
+        if (!targetRowId || !document.getElementById("row_" + targetRowId)) {
+            targetRowId = createRow(false);
+        }
+
+        const paneId = "p" + (++paneCounter);
+
+        const paneHtml = `
+            <div class="viewer-pane" id="pane_${paneId}" data-paneid="${paneId}">
+                <div class="pane-header">
+                    <div class="pane-title" id="pane_title_${paneId}">Empty pane</div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-danger btn-sm pane-fullscreen" data-paneid="${paneId}" type="button" title="Toggle fullscreen">⛶</button>
+                        <button class="btn btn-danger btn-sm pane-close" data-paneid="${paneId}" type="button"><b>✕</b></button>
+                    </div>
+                </div>
+
+                <div id="content_${paneId}" class="p-2 file_display pane-content sidebar_toggle" style="text-align: justify;">
+                    <div class="empty-pane">Open a file to display it here.</div>
+                </div>
+
+                <textarea class="p-2 file_display" rows="30" id="editor_${paneId}" style="width: 100%; resize: none; display: none;"></textarea>
+
+                <div class="pane-controls-row">
+                    <button class="btn btn-secondary" id="editBtn_${paneId}" type="button">Edit</button>
+
+                    <div class="pane-slider-wrap" id="slider_div_${paneId}">
+                        <div class="row">
+                            <h5 class="zoom-control" style="width: fit-content;" data-paneid="${paneId}" data-step="-20">&#x1F50E;&#xFE0E;</h5>
+                            <input type="range" class="form-range col pane-scale-slider" id="scale-slider_${paneId}" max="500" min="100" value="100">
+                            <h3 class="zoom-control" style="width: fit-content;" data-paneid="${paneId}" data-step="20">&#x1F50E;&#xFE0E;</h3>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary" id="saveBtn_${paneId}" type="button" style="display: none;">Save</button>
+                    <button class="btn btn-danger" id="cancelBtn_${paneId}" type="button" style="display: none;">Cancel</button>
+                </div>
+            </div>
+        `;
+
+        $("#row_" + targetRowId).append(paneHtml);
+
+        paneStates[paneId] = {
+            image_mode: false,
+            markdownContent: "",
+            currentFile: null,
+            pane_kind: "empty"
+        };
+
+        attachPaneInteractions(paneId);
+        markPaneKind(paneId, "empty");
+        updatePaneFullscreenClass(paneId);
+        setActivePane(paneId);
+        updateCloseButtons();
+        renderPaneMenu();
+        recalculateCompactRowHeights();
+        setTimeout(updateAllPaneImageScales, 0);
+        return paneId;
+    }
+
+    function removePane(paneId) {
+        if (!paneStates[paneId]) { return; }
+
+        const paneEl = document.getElementById("pane_" + paneId);
+        const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
+        if (paneEl && fullscreenEl === paneEl) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+
+        const rowEl = $("#pane_" + paneId).closest(".pane-row");
+        const removedRowId = rowEl.data("rowid");
+
+        delete paneStates[paneId];
+        $("#pane_" + paneId).remove();
+
+        if (rowEl.length && rowEl.find(".viewer-pane").length === 0) {
+            rowEl.remove();
+        }
+
+        const remainingPaneIds = getPaneIdsInOrder();
+        const remainingRowIds = getRowIdsInOrder();
+
+        if (remainingPaneIds.length === 0) {
+            createRow(true);
+        } else if (activePaneId === paneId) {
+            setActivePane(remainingPaneIds[0]);
+        } else if (removedRowId && activeRowId === removedRowId && remainingRowIds.length > 0) {
+            activeRowId = remainingRowIds[0];
+        }
+
+        updateCloseButtons();
+        renderPaneMenu();
+        recalculateCompactRowHeights();
+        setTimeout(updateAllPaneImageScales, 0);
+    }
+
+    function chooseAlternatePane() {
+        return addPane(activeRowId);
+    }
+
+    function loadMarkdownFile(file, paneId = activePaneId) {
+        if (!paneId || !paneStates[paneId]) { return; }
+
+        const state = getPaneState(paneId);
+        const lowerName = (file.name || "").toLowerCase();
+        state.currentFile = file;
+        $("#pane_title_" + paneId)
+            .text(file.name)
+            .attr("title", file.webkitRelativePath || file.name);
+        setPageTitle(null, true);
+
+        if (lowerName.endsWith(".md")){
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                const markdownContent = event.target.result;
+                state.markdownContent = markdownContent;
+
+                displayMDContent(markdownContent, paneId);
+                $("#editBtn_" + paneId).show();
+                $("#slider_div_" + paneId).hide();
+                $("#content_" + paneId).addClass("sidebar_toggle");
+                setPaneModeClass(paneId, "text-mode");
+                $("#editor_" + paneId).val(markdownContent).hide();
+                $("#content_" + paneId).show();
+                $("#saveBtn_" + paneId).hide();
+                $("#cancelBtn_" + paneId).hide();
+
+                state.image_mode = false;
+                markPaneKind(paneId, "text");
+                updatePaneFullscreenClass(paneId);
+                renderPaneMenu();
+                setTimeout(updateAllPaneImageScales, 0);
+                setTimeout(layoutAllRows, 0);
+            };
+
+            reader.onerror = (error) => {
+                console.error('Error reading the file:', error);
+            };
+
+            reader.readAsText(file, 'utf-8');
+        } else if (lowerName.endsWith(".docx")) {
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                const arrayBuffer = event.target.result;
+
+                $("#editBtn_" + paneId).hide();
+                $("#slider_div_" + paneId).hide();
+                $("#content_" + paneId).removeClass("sidebar_toggle");
+                setPaneModeClass(paneId, "docx-mode");
+                document.getElementById("content_" + paneId).innerHTML = `<div class="docx-host" id="docx_host_${paneId}"></div>`;
+                $("#editor_" + paneId).hide();
+                $("#content_" + paneId).show();
+                $("#saveBtn_" + paneId).hide();
+                $("#cancelBtn_" + paneId).hide();
+
+                state.image_mode = false;
+                state.markdownContent = "";
+                markPaneKind(paneId, "docx");
+                updatePaneFullscreenClass(paneId);
+
+                const hostEl = document.getElementById("docx_host_" + paneId);
+                if (!hostEl) { return; }
+
+                try {
+                    const docxRenderer = (window.docx && typeof window.docx.renderAsync === "function")
+                        ? window.docx
+                        : (window.docxPreview && typeof window.docxPreview.renderAsync === "function")
+                            ? window.docxPreview
+                            : null;
+
+                    if (!docxRenderer) {
+                        throw new Error("DOCX renderer library did not load.");
+                    }
+
+                    await docxRenderer.renderAsync(arrayBuffer, hostEl, null, {
+                        inWrapper: true,
+                        breakPages: true,
+                        ignoreWidth: false,
+                        ignoreHeight: false,
+                        ignoreFonts: false,
+                        renderHeaders: true,
+                        renderFooters: true,
+                        renderFootnotes: true,
+                        renderEndnotes: true,
+                        useBase64URL: true
+                    });
+                } catch (error) {
+                    console.error("Error rendering DOCX:", error);
+                    hostEl.innerHTML = `
+                        <div class="empty-pane" style="font-style: normal;">
+                            Couldn't render this DOCX file.<br>
+                            <span style="color:var(--accent-primary);">${file.name}</span><br>
+                            <span style="font-size:0.9em; color:#7f8b92;">
+                                Check console for the specific DOCX error.
+                            </span>
+                        </div>
+                    `;
+                }
+
+                renderPaneMenu();
+                setTimeout(() => {
+                    layoutAllRows();
+                    scaleDocxToPane(paneId);
+                }, 0);
+            };
+
+            reader.onerror = (error) => {
+                console.error('Error reading the file:', error);
+            };
+
+            reader.readAsArrayBuffer(file);
+        } else if (lowerName.endsWith(".png") || lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")){
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                const image = event.target.result;
+                $("#editBtn_" + paneId).hide();
+                $("#slider_div_" + paneId).show();
+                $("#content_" + paneId).removeClass("sidebar_toggle");
+                setPaneModeClass(paneId, "image-mode");
+                document.getElementById('content_' + paneId).innerHTML = "<div class='pane-image-stage' id='image_stage_" + paneId + "'><img draggable='false' class='display_image' id='image_display_" + paneId + "' src='" + image + "'></div>";
+                $("#editor_" + paneId).hide();
+                $("#content_" + paneId).show();
+                $("#saveBtn_" + paneId).hide();
+                $("#cancelBtn_" + paneId).hide();
+                $("#scale-slider_" + paneId).val(100);
+                const imageEl = document.getElementById("image_display_" + paneId);
+                if (imageEl) {
+                    if (imageEl.complete) {
+                        updateAllPaneImageScales();
+                    } else {
+                        imageEl.onload = function () {
+                            updatePaneImageScale(paneId);
+                        };
+                    }
+                }
+                state.image_mode = true;
+                state.markdownContent = "";
+                markPaneKind(paneId, "image");
+                updatePaneFullscreenClass(paneId);
+                renderPaneMenu();
+                setTimeout(layoutAllRows, 0);
+            };
+
+            reader.onerror = (error) => {
+                console.error('Error reading the file:', error);
+            };
+
+            reader.readAsDataURL(file);
+        } else if (lowerName.endsWith(".mp3") || lowerName.endsWith(".wav") || lowerName.endsWith(".ogg")) {
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                const audioSrc = event.target.result;
+                const audioMimeType = getAudioMimeType(file.name);
+
+                $("#editBtn_" + paneId).hide();
+                $("#slider_div_" + paneId).hide();
+                $("#content_" + paneId).removeClass("sidebar_toggle");
+                setPaneModeClass(paneId, null);
+
+                document.getElementById("content_" + paneId).innerHTML = `
+                    <div class="audio-player-wrap">
+                        <div class="audio-player-card">
+                            <div class="audio-player-top">
+                                <div class="audio-player-icon">♪</div>
+                                <div class="audio-player-text">
+                                    <div class="audio-player-label">Audio File</div>
+                                    <div class="audio-player-filename">${file.name}</div>
+                                </div>
+                            </div>
+
+                            <audio class="audio-player-controls" controls preload="metadata">
+                                <source src="${audioSrc}" type="${audioMimeType}">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    </div>
+                `;
+
+                $("#editor_" + paneId).hide();
+                $("#content_" + paneId).show();
+                $("#saveBtn_" + paneId).hide();
+                $("#cancelBtn_" + paneId).hide();
+
+                state.image_mode = false;
+                state.markdownContent = "";
+                markPaneKind(paneId, "audio");
+                updatePaneFullscreenClass(paneId);
+                renderPaneMenu();
+                setTimeout(layoutAllRows, 0);
+            };
+
+            reader.onerror = (error) => {
+                console.error('Error reading the file:', error);
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            $("#editBtn_" + paneId).hide();
+            $("#slider_div_" + paneId).hide();
+            $("#content_" + paneId).removeClass("sidebar_toggle");
+            setPaneModeClass(paneId, "text-mode");
+            document.getElementById("content_" + paneId).innerHTML = `
+                <div class="empty-pane" style="font-style: normal;">
+                    Unsupported file type.<br>
+                    <span style="color:var(--accent-primary);">${file.name}</span>
+                </div>
+            `;
+            $("#editor_" + paneId).hide();
+            $("#content_" + paneId).show();
+            $("#saveBtn_" + paneId).hide();
+            $("#cancelBtn_" + paneId).hide();
+
+            state.image_mode = false;
+            state.markdownContent = "";
+            markPaneKind(paneId, "text");
+            updatePaneFullscreenClass(paneId);
+            renderPaneMenu();
+            setTimeout(layoutAllRows, 0);
+        }
+    };
+
+
+function underlineText(elementId){
+        $(elementId).toggleClass('underline');
+    }
+
+    function toggleSidebar (){
+        $("#sidebar").toggleClass("fixed-sidebar");
+        $("#sidebar").toggleClass("fixed-sidebar-collapsed");
+        $("#main_body").toggleClass("sidebar-open");
+        $("#main_body").toggleClass("sidebar-closed");
+
+        $("#md_file").toggle();
+        $("#file_list_div").toggle();
+        $("#pane_menu_section").toggle();
+        setTimeout(updateAllPaneImageScales, 0);
+    }
+
+    function recalculateCompactRowHeights() {
+        if (!$("body").hasClass("compact-rows")) {
+            document.body.style.removeProperty("--compact-pane-height");
+            return;
+        }
+
+        const container = document.getElementById("pane_container");
+        if (!container) { return; }
+
+        const rows = container.querySelectorAll(".pane-row");
+        const rowCount = Math.max(1, rows.length);
+
+        const containerRect = container.getBoundingClientRect();
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 900;
+        const rowStyles = window.getComputedStyle(container);
+        const rowGap = parseFloat(rowStyles.gap || rowStyles.rowGap || 12) || 12;
+
+        const samplePane = container.querySelector(".viewer-pane");
+        let chromeHeight = 86;  // sane fallback
+        if (samplePane) {
+            const paneContent = samplePane.querySelector(".pane-content");
+            if (paneContent) {
+                const paneRect = samplePane.getBoundingClientRect();
+                const contentRect = paneContent.getBoundingClientRect();
+                chromeHeight = Math.max(0, paneRect.height - contentRect.height);
+            }
+        }
+
+        const bottomPadding = $("body").hasClass("gui-hidden") ? 0 : 8;
+        const availableHeight = Math.max(120, viewportHeight - containerRect.top - bottomPadding);
+        const totalGapHeight = rowGap * Math.max(0, rowCount - 1);
+        const perRowTotal = Math.max(140, Math.floor((availableHeight - totalGapHeight) / rowCount));
+        const contentHeight = Math.max(90, perRowTotal - chromeHeight);
+
+        document.body.style.setProperty("--compact-pane-height", contentHeight + "px");
+        setTimeout(layoutAllRows, 0);
+    }
+
+    function setCompactRows(enabled) {
+        $("body").toggleClass("compact-rows", !!enabled);
+        $("#compactRowsToggle").prop("checked", !!enabled);
+        recalculateCompactRowHeights();
+        setTimeout(updateAllPaneImageScales, 0);
+    }
+
+    function toggleGUIVisibility(forceState = null) {
+        const shouldHide = forceState === null ? !$("body").hasClass("gui-hidden") : !!forceState;
+        $("body").toggleClass("gui-hidden", shouldHide);
+        recalculateCompactRowHeights();
+        setTimeout(updateAllPaneImageScales, 0);
+    }
+
+    function downloadString(text, fileName) {
+        var blob = new Blob([text], { type: "text/plain" });
+
+        var a = document.createElement('a');
+        fileName = fileName + ".txt";
+        a.download = fileName;
+        a.href = URL.createObjectURL(blob);
+        a.dataset.downloadurl = ["text/plain", a.download, a.href].join(':');
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(a.href); }, 1500);
+    }
+
+    function editMode(paneId){
+        const state = getPaneState(paneId);
+        if (!state || state.image_mode || state.pane_kind !== "text") { return; }
+
+        $("#content_" + paneId).hide();
+        $("#editor_" + paneId).show();
+        $("#editBtn_" + paneId).hide();
+        $("#saveBtn_" + paneId).show();
+        $("#cancelBtn_" + paneId).show();
+
+        $("#editor_" + paneId).val(state.markdownContent);
+    }
+
+    function saveBtn(paneId) {
+        const state = getPaneState(paneId);
+        if (!state) { return; }
+
+        const newContent = $("#editor_" + paneId).val();
+        state.markdownContent = newContent;
+
+        $("#content_" + paneId).show();
+        $("#editor_" + paneId).hide();
+        $("#editBtn_" + paneId).show();
+        $("#saveBtn_" + paneId).hide();
+        $("#cancelBtn_" + paneId).hide();
+
+        displayMDContent(newContent, paneId);
+        setTimeout(layoutAllRows, 0);
+    }
+
+    function cancelBtn(paneId) {
+        const state = getPaneState(paneId);
+        if (!state) { return; }
+
+        $("#content_" + paneId).show();
+        $("#editor_" + paneId).hide();
+        $("#editBtn_" + paneId).show();
+        $("#saveBtn_" + paneId).hide();
+        $("#cancelBtn_" + paneId).hide();
+
+        $("#editor_" + paneId).val(state.markdownContent);
+    }
+
+    function cleanString(string) {
+        return string.replaceAll(' ', '').replaceAll("'", '').replaceAll("#", '').replaceAll("&", '').replaceAll("!", '');
+    }
+
+    function idFromPath(pathKey) {
+        return cleanString(pathKey.replaceAll("/", "__"));
+    }
+
+    function getPaneImageBaseFit(paneId) {
+        const contentEl = document.getElementById("content_" + paneId);
+        const imageEl = document.getElementById("image_display_" + paneId);
+
+        if (!contentEl || !imageEl || !imageEl.naturalWidth || !imageEl.naturalHeight) {
+            return null;
+        }
+
+        const contentStyles = window.getComputedStyle(contentEl);
+        const paddingX = parseFloat(contentStyles.paddingLeft || 0) + parseFloat(contentStyles.paddingRight || 0);
+        const paddingY = parseFloat(contentStyles.paddingTop || 0) + parseFloat(contentStyles.paddingBottom || 0);
+
+        const contentWidth = Math.max(1, contentEl.clientWidth - paddingX);
+        const contentHeight = Math.max(1, contentEl.clientHeight - paddingY);
+        if (!contentWidth || !contentHeight) { return null; }
+
+        const widthFromHeight = imageEl.naturalWidth * (contentHeight / imageEl.naturalHeight);
+
+        if (widthFromHeight <= contentWidth) {
+            return {
+                width: widthFromHeight,
+                height: contentHeight,
+                fitMode: "height",
+                contentWidth,
+                contentHeight
+            };
+        }
+
+        const heightFromWidth = imageEl.naturalHeight * (contentWidth / imageEl.naturalWidth);
+        return {
+            width: contentWidth,
+            height: heightFromWidth,
+            fitMode: "width",
+            contentWidth,
+            contentHeight
+        };
+    }
+
+    function getPaneChromeWidth(paneId) {
+        const paneEl = document.getElementById("pane_" + paneId);
+        const contentEl = document.getElementById("content_" + paneId);
+
+        if (!paneEl || !contentEl) { return 0; }
+
+        const paneStyles = window.getComputedStyle(paneEl);
+        const contentStyles = window.getComputedStyle(contentEl);
+
+        const paneHorizontal =
+            parseFloat(paneStyles.paddingLeft || 0) +
+            parseFloat(paneStyles.paddingRight || 0) +
+            parseFloat(paneStyles.borderLeftWidth || 0) +
+            parseFloat(paneStyles.borderRightWidth || 0);
+
+        const contentHorizontal =
+            parseFloat(contentStyles.paddingLeft || 0) +
+            parseFloat(contentStyles.paddingRight || 0) +
+            parseFloat(contentStyles.borderLeftWidth || 0) +
+            parseFloat(contentStyles.borderRightWidth || 0);
+
+        return paneHorizontal + contentHorizontal;
+    }
+
+    
+    function scaleDocxToPane(paneId) {
+        const state = getPaneState(paneId);
+        if (!state || state.pane_kind !== "docx") { return; }
+
+        const contentEl = document.getElementById("content_" + paneId);
+        if (!contentEl) { return; }
+
+        const pages = contentEl.querySelectorAll(".docx > section.docx-page");
+        if (!pages.length) { return; }
+
+        const contentStyles = window.getComputedStyle(contentEl);
+        const paddingX = parseFloat(contentStyles.paddingLeft || 0) + parseFloat(contentStyles.paddingRight || 0);
+        const availableWidth = Math.max(1, contentEl.clientWidth - paddingX);
+
+        pages.forEach((pageEl) => {
+            pageEl.style.transform = "";
+            pageEl.style.width = "";
+            pageEl.style.maxWidth = "none";
+
+            const naturalWidth = pageEl.scrollWidth || pageEl.offsetWidth || 1;
+            const scale = Math.min(1, availableWidth / naturalWidth);
+
+            pageEl.style.transform = "scale(" + scale + ")";
+            pageEl.style.width = naturalWidth + "px";
+            pageEl.style.maxWidth = "none";
+            pageEl.style.marginBottom = Math.max(24, Math.round((1 - scale) * 120) + 24) + "px";
+        });
+    }
+
+    function scaleAllDocxPanes() {
+        Object.keys(paneStates).forEach((paneId) => {
+            scaleDocxToPane(paneId);
+        });
+    }
+
+function getIdealPaneWidth(paneId) {
+        const state = getPaneState(paneId);
+        if (!state) { return 800; }
+
+        if (state.image_mode) {
+            const contentEl = document.getElementById("content_" + paneId);
+            const imageEl = document.getElementById("image_display_" + paneId);
+            const sliderEl = document.getElementById("scale-slider_" + paneId);
+
+            if (!contentEl || !imageEl || !imageEl.naturalWidth || !imageEl.naturalHeight) {
+                return 800;
+            }
+
+            const contentStyles = window.getComputedStyle(contentEl);
+            const paddingY = parseFloat(contentStyles.paddingTop || 0) + parseFloat(contentStyles.paddingBottom || 0);
+            const contentHeight = Math.max(1, contentEl.clientHeight - paddingY);
+            const zoom = sliderEl ? (parseInt(sliderEl.value, 10) / 100) : 1;
+
+            const fittedImageWidth = (imageEl.naturalWidth / imageEl.naturalHeight) * contentHeight * zoom;
+            return Math.ceil(fittedImageWidth + getPaneChromeWidth(paneId));
+        }
+
+        if (state.pane_kind === "docx") {
+            return 900;
+        }
+
+        if (state.pane_kind === "text") {
+            return 760;
+        }
+
+        if (state.pane_kind === "audio") {
+            return 420;
+        }
+
+        return 800;
+    }
+
+    function layoutRowPanes(rowEl) {
+        if (!rowEl) { return; }
+
+        const paneEls = Array.from(rowEl.querySelectorAll(".viewer-pane"));
+        if (!paneEls.length) { return; }
+
+        const rowStyle = window.getComputedStyle(rowEl);
+        const gap = parseFloat(rowStyle.columnGap || rowStyle.gap || 0) || 0;
+        const totalGap = gap * Math.max(0, paneEls.length - 1);
+        const availableWidth = Math.max(100, rowEl.clientWidth - totalGap);
+
+        const idealWidths = paneEls.map((paneEl) => {
+            const paneId = paneEl.dataset.paneid;
+            return getIdealPaneWidth(paneId);
+        });
+
+        const totalIdealWidth = idealWidths.reduce((sum, width) => sum + width, 0);
+        const shrinkRatio = totalIdealWidth > availableWidth ? (availableWidth / totalIdealWidth) : 1;
+
+        paneEls.forEach((paneEl, index) => {
+            const paneId = paneEl.dataset.paneid;
+            const state = getPaneState(paneId);
+            let minWidth = 120;
+
+            if (state) {
+                if (state.pane_kind === "text") { minWidth = 260; }
+                else if (state.pane_kind === "docx") { minWidth = 320; }
+                else if (state.pane_kind === "audio") { minWidth = 260; }
+            }
+
+            const targetWidth = Math.max(minWidth, Math.floor(idealWidths[index] * shrinkRatio));
+            paneEl.style.width = targetWidth + "px";
+            paneEl.style.minWidth = "0";
+            paneEl.style.maxWidth = targetWidth + "px";
+            paneEl.style.flexBasis = targetWidth + "px";
+        });
+    }
+
+    function layoutAllRows() {
+        document.querySelectorAll(".pane-row").forEach((rowEl) => {
+            layoutRowPanes(rowEl);
+        });
+        scaleAllDocxPanes();
+    }
+
+    function updatePaneImageScale(paneId) {
+        const sliderEl = $("#scale-slider_" + paneId);
+        const imageEl = $("#image_display_" + paneId);
+        const contentEl = $("#content_" + paneId);
+        const stageEl = $("#image_stage_" + paneId);
+
+        if (!sliderEl.length || !imageEl.length || !contentEl.length || !stageEl.length) { return; }
+
+        const baseFit = getPaneImageBaseFit(paneId);
+        if (!baseFit) { return; }
+
+        const scale = parseInt(sliderEl.val(), 10) / 100;
+        const scaledWidth = baseFit.width * scale;
+        const scaledHeight = baseFit.height * scale;
+
+        imageEl.css({
+            "width": scaledWidth + "px",
+            "height": scaledHeight + "px",
+            "max-width": "none",
+            "max-height": "none"
+        });
+
+        stageEl.css({
+            "width": Math.max(baseFit.contentWidth, scaledWidth) + "px",
+            "height": Math.max(baseFit.contentHeight, scaledHeight) + "px",
+            "min-width": Math.max(baseFit.contentWidth, scaledWidth) + "px",
+            "min-height": Math.max(baseFit.contentHeight, scaledHeight) + "px"
+        });
+    }
+
+    function updateAllPaneImageScales() {
+        layoutAllRows();
+
+        Object.keys(paneStates).forEach((paneId) => {
+            const state = getPaneState(paneId);
+            if (state && state.image_mode) {
+                updatePaneImageScale(paneId);
+            }
+        });
+    }
+
+    function sliderPane(paneId, slider_value){
+        const sliderEl = $("#scale-slider_" + paneId);
+        const imageEl = $("#image_display_" + paneId);
+
+        if (!imageEl.length) { return; }
+
+        let scale;
+
+        if ((typeof slider_value) == "number" && slider_value !== 0) {
+            scale = parseInt(sliderEl.val(), 10) + slider_value;
+            const min = parseInt(sliderEl.attr("min"), 10);
+            const max = parseInt(sliderEl.attr("max"), 10);
+
+            if (scale < min) {
+                scale = min;
+            }
+            if (scale > max) {
+                scale = max;
+            }
+            sliderEl.val(scale);
+        }
+
+        updateAllPaneImageScales();
+    }
+
+
+    $(document).ready(function () {
+        createRow(true);
+        setCompactRows(true);
+        // recalculateCompactRowHeights();
+
+        $("#sidebarAddPaneBtn").on("click", function () {
+            addPane(activeRowId);
+        });
+
+        $("#sidebarAddRowBtn").on("click", function () {
+            createRow(true);
+        });
+
+        $("#compactRowsToggle").on("change", function () {
+            setCompactRows($(this).is(":checked"));
+        });
+
+        $("#paneMenuToggle").on("click", function () {
+            $("#pane_menu_body").slideToggle(120);
+        });
+
+        $(document).on("click", ".viewer-pane", function (e) {
+            if ($(e.target).closest(".pane-close, .pane-fullscreen, .zoom-control, .pane-scale-slider, .btn, audio, textarea, input").length) {
+                return;
+            }
+            setActivePane($(this).data("paneid"));
+        });
+
+        $(document).on("click", ".pane-close", function (e) {
+            e.stopPropagation();
+            removePane($(this).data("paneid"));
+        });
+
+        $(document).on("click", ".pane-fullscreen", function (e) {
+            e.stopPropagation();
+            togglePaneFullscreen($(this).data("paneid"));
+        });
+
+        $(document).on("dblclick", ".viewer-pane", function (e) {
+            if ($(e.target).closest(".pane-close, .pane-fullscreen, .zoom-control, .pane-scale-slider, .btn, audio, textarea, input").length) {
+                return;
+            }
+            const paneId = $(this).data("paneid");
+            togglePaneFullscreen(paneId);
+        });
+
+        $(document).on("click", ".pane-menu-main", function (e) {
+            e.stopPropagation();
+            const paneId = $(this).data("paneid");
+            setActivePane(paneId);
+            const paneEl = document.getElementById("pane_" + paneId);
+            if (paneEl) {
+                paneEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+            }
+        });
+
+        $(document).on("click", ".pane-menu-remove", function (e) {
+            e.stopPropagation();
+            removePane($(this).data("paneid"));
+        });
+
+        $(document).on("click", "[id^='editBtn_']", function (e) {
+            e.stopPropagation();
+            editMode(this.id.replace("editBtn_", ""));
+        });
+
+        $(document).on("click", "[id^='saveBtn_']", function (e) {
+            e.stopPropagation();
+            saveBtn(this.id.replace("saveBtn_", ""));
+        });
+
+        $(document).on("click", "[id^='cancelBtn_']", function (e) {
+            e.stopPropagation();
+            cancelBtn(this.id.replace("cancelBtn_", ""));
+        });
+
+        $(document).on("click", ".zoom-control", function (e) {
+            e.stopPropagation();
+            sliderPane($(this).data("paneid"), parseInt($(this).data("step"), 10));
+        });
+
+        $(document).on("input change", ".pane-scale-slider", function () {
+            sliderPane(this.id.replace("scale-slider_", ""), 0);
+        });
+
+        $(window).on("resize", function () {
+            recalculateCompactRowHeights();
+            updateAllPaneImageScales();
+            scaleAllDocxPanes();
+        });
+
+        // $(document).on("click", ".pane-content.sidebar_toggle", function () {
+        //     const paneId = this.id.replace("content_", "");
+        //     const state = getPaneState(paneId);
+        //     if (state && !state.image_mode) {
+        //         toggleSidebar();
+        //     }
+        // });
+
+        $("#md_file").change(function(){
+            file_layout = {
+                type : "root",
+                children: {}
+            };
+
+            rootFolderTitle = "Sammie's Notebook";
+            setPageTitle(null, true);
+            setSidebarIcon(null);
+            setChromeFriendlyFavicon(null, "image/png");
+            selectedFiles = this.files;
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                applyRootIconToSidebarAndFavicon(selectedFiles[i]);
+            }
+
+            function sortDirectory(file_path, parent_folder, fileIndex) {
+                const indexOfDelimiter = file_path.indexOf("/");
+                if (indexOfDelimiter !== -1) {
+                    let folder_name = file_path.substring(0, indexOfDelimiter);
+
+                    if (parent_folder.type == "root" && $("#" + cleanString(folder_name)).html() == null) {
+                        $("#root_folder").text(folder_name);
+                        rootFolderTitle = folder_name || "Sammie's Notebook";
+                        setPageTitle(null, true);
+                    }
+
+                    let trimmed_path = file_path.substring(indexOfDelimiter+1);
+
+                    if (parent_folder == null) {
+                        file_layout.children[folder_name] = {
+                            name: folder_name,
+                            type: "folder",
+                            children: {}
+                        };
+                        sortDirectory(trimmed_path, file_layout.children[folder_name], fileIndex);
+                    } else {
+                        if (!Object.keys(parent_folder.children).includes(folder_name)){
+                            parent_folder.children[folder_name] = {
+                                name: folder_name,
+                                type: "folder",
+                                children: {}
+                            };
+                        }
+                        sortDirectory(trimmed_path, parent_folder.children[folder_name], fileIndex);
+                    }
+                } else {
+                    parent_folder.children[file_path] = {
+                        name: file_path,
+                        type: "file",
+                        file_id: fileIndex,
+                        content: selectedFiles[fileIndex],
+                        relative_path: selectedFiles[fileIndex].webkitRelativePath || file_path
+                    };
+                }
+            }
+
+            function displayDirectory(file, parentUlId, pathKey) {
+                const children = file.children ?? {};
+                const objKeys = Object.keys(children);
+
+                for (let i = 0; i < objKeys.length; i++) {
+                    const subFile = children[objKeys[i]];
+                    const childPathKey = pathKey + "/" + subFile.name;
+
+                    if (subFile.type === "file") {
+                        const fileId = "f__" + idFromPath(childPathKey);
+
+                        $("#" + parentUlId).append(
+                            "<li class='file_item' data-fileid='" + subFile.file_id + "' id='" + fileId + "'>" +
+                            subFile.name +
+                            "</li>"
+                        );
+
+                    } else if (subFile.type === "folder") {
+                        const folderUlId = "d__" + idFromPath(childPathKey);
+
+                        $("#" + parentUlId).append(
+                            "<li class='folderitem'>" +
+                            "<div style='background-color:#1f1f1f !important; color:var(--accent-primary);' class='folder-label'><b>" +
+                                subFile.name +
+                            "</b></div>" +
+                            "<ul class='folder-children' id='" + folderUlId + "'></ul>" +
+                            "</li>"
+                        );
+
+                        displayDirectory(subFile, folderUlId, childPathKey);
+                    }
+                }
+            }
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                sortDirectory(selectedFiles[i].webkitRelativePath || selectedFiles[i].name, file_layout, i);
+            };
+
+            $("#file_list_div ul").remove();
+            $("#root_folder").after("<ul id='tree_root'></ul>");
+
+            displayDirectory(file_layout, "tree_root", "root");
+
+            $(".folder-children").hide();
+            $("#tree_root").find("> li > .folder-children").show();
+            $(".folder-children:visible").siblings(".folder-label").addClass("expanded");
+
+            $(".file_item").on("mouseover", function(){
+                underlineText(this);
+            });
+            $(".file_item").on("mouseleave", function(){
+                underlineText(this);
+            });
+
+            if (selectedFiles.length > 0) {
+                loadMarkdownFile(selectedFiles[0], activePaneId);
+            }
+        });
+
+        $(document).on("click", ".file_item", function (event) {
+            const id = $(this).data("fileid");
+            let targetPaneId = activePaneId;
+
+            if (event.shiftKey) {
+                targetPaneId = chooseAlternatePane();
+            }
+
+            setActivePane(targetPaneId);
+            loadMarkdownFile(selectedFiles[id], targetPaneId);
+        });
+
+        $(document).on("click", ".folder-label", function (e) {
+            e.stopPropagation();
+
+            const $children = $(this).siblings(".folder-children");
+            const isOpen = $children.is(":visible");
+
+            $children.toggle(!isOpen);
+            $(this).toggleClass("expanded", !isOpen);
+        });
+
+        $(document).on("fullscreenchange webkitfullscreenchange", function () {
+            const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (!fullscreenEl) {
+                currentFullscreenPaneId = null;
+            } else if (fullscreenEl.classList && fullscreenEl.classList.contains("viewer-pane")) {
+                currentFullscreenPaneId = fullscreenEl.dataset.paneid || null;
+            }
+            recalculateCompactRowHeights();
+            setTimeout(updateAllPaneImageScales, 0);
+        });
+
+        $(document).on("keydown", function (e) {
+            const targetTag = (e.target && e.target.tagName ? e.target.tagName.toLowerCase() : "");
+            const isTypingTarget = targetTag === "input" || targetTag === "textarea" || e.target?.isContentEditable;
+
+            if (e.key === "Escape") {
+                const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
+                if (fullscreenEl) {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                } else if ($("body").hasClass("gui-hidden")) {
+                    toggleGUIVisibility(false);
+                }
+            }
+
+            if (!isTypingTarget && (e.key === "h" || e.key === "H")) {
+                e.preventDefault();
+                toggleGUIVisibility();
+            }
+
+            if (!isTypingTarget && (e.key === "f" || e.key === "F")) {
+                e.preventDefault();
+                toggleAppFullscreen();
+            }
+        });
+
+        let cursorTimeout;
+        const CURSOR_HIDE_DELAY = 3000; // 3 seconds
+
+        function getCursorRoots() {
+            const roots = [document.documentElement, document.body];
+            const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fullscreenEl) {
+                roots.push(fullscreenEl);
+            }
+            return roots.filter(Boolean);
+        }
+
+        function showCursor() {
+            getCursorRoots().forEach((root) => {
+                if (root.classList) {
+                    root.classList.remove("hide-cursor");
+                }
+            });
+        }
+
+        function hideCursor() {
+            getCursorRoots().forEach((root) => {
+                if (root.classList) {
+                    root.classList.add("hide-cursor");
+                }
+            });
+        }
+
+        function resetCursorTimer() {
+            showCursor();
+            clearTimeout(cursorTimeout);
+            cursorTimeout = setTimeout(hideCursor, CURSOR_HIDE_DELAY);
+        }
+
+        // Detect activity
+        $(document).on("mousemove keydown mousedown scroll touchstart pointermove wheel", function () {
+            resetCursorTimer();
+        });
+
+        document.addEventListener("fullscreenchange", resetCursorTimer);
+        document.addEventListener("webkitfullscreenchange", resetCursorTimer);
+
+        // Initialize on load
+        resetCursorTimer();
+
+});
+
+</script>
 
 </html>
