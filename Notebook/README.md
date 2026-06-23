@@ -1,4 +1,4 @@
-# Markdown Manager
+# Sammie's Notebook
 
 A lightweight multi-pane viewer for markdown notes, images, audio files, and DOCX documents.
 
