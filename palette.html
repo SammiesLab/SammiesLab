@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sammie’s Lab Palette Preview</title>
+<style>
+    :root {
+        --bg-main: #181818;
+        --bg-panel: #1f1f1f;
+        --bg-panel-alt: #202020;
+        --bg-control: #20252b;
+
+        --border-subtle: #393939;
+        --border-control: #495057;
+        --border-button: #6f6396;
+        --border-hover: #9f8fe0;
+        --border-card: #3f4750;
+
+        --text-main: #cccccc;
+        --text-soft: #d4dde3;
+        --text-strong: #d7e3ea;
+        --text-muted: #7f8b92;
+        --text-hover: #e6eef4;
+
+        --accent-lavender: #b8a1ff;
+        --accent-lavender-soft: #c7b6ff;
+        --accent-lavender-muted: #a996e8;
+        --accent-underline: #d8ccff;
+
+        --glow-primary-soft: rgba(184, 161, 255, 0.15);
+        --glow-primary: rgba(184, 161, 255, 0.2);
+        --glow-primary-strong: rgba(184, 161, 255, 0.24);
+        --glow-primary-inner: rgba(184, 161, 255, 0.08);
+
+        --radius-sm: 10px;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+
+        --shadow-panel: 0px 0px 30px rgba(15, 15, 15, 1);
+        --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at top left, rgba(184, 161, 255, 0.11), transparent 34rem),
+            radial-gradient(circle at bottom right, rgba(199, 182, 255, 0.07), transparent 32rem),
+            var(--bg-main);
+        color: var(--text-main);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+    }
+
+    ::selection {
+        background: rgba(184, 161, 255, 0.32);
+        color: #f1ecff;
+    }
+
+    .page {
+        width: min(1100px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 44px 0 64px;
+    }
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 28px;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(180deg, rgba(31, 31, 31, 0.96), rgba(24, 24, 24, 0.96));
+        box-shadow: var(--shadow-panel);
+        margin-bottom: 26px;
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -80px -110px auto;
+        width: 280px;
+        height: 280px;
+        border-radius: 999px;
+        background: rgba(184, 161, 255, 0.10);
+        filter: blur(16px);
+        pointer-events: none;
+    }
+
+    h1 {
+        margin: 0 0 8px;
+        color: var(--accent-lavender-soft);
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        letter-spacing: -0.04em;
+        text-shadow: 0 0 14px rgba(184, 161, 255, 0.2);
+    }
+
+    .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .copy-mode-panel {
+        position: relative;
+        z-index: 1;
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        border: 1px solid rgba(184, 161, 255, 0.16);
+        border-radius: var(--radius-md);
+        background: rgba(184, 161, 255, 0.055);
+    }
+
+    .copy-mode-label {
+        color: var(--text-soft);
+        font-size: 0.92rem;
+    }
+
+    .segmented {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        min-width: min(100%, 360px);
+        padding: 4px;
+        border: 1px solid var(--border-button);
+        border-radius: 999px;
+        background: rgba(24, 24, 24, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .segmented input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .segmented label {
+        margin: 0;
+        padding: 7px 12px;
+        border-radius: 999px;
+        color: var(--text-muted);
+        text-align: center;
+        font-size: 0.86rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        user-select: none;
+    }
+
+    .segmented input:checked + label {
+        color: #f1ecff;
+        background: rgba(184, 161, 255, 0.18);
+        box-shadow: 0 0 0 1px rgba(184, 161, 255, 0.20), inset 0 0 14px rgba(184, 161, 255, 0.08);
+    }
+
+    .section {
+        margin-top: 26px;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+    }
+
+    h2 {
+        margin: 0;
+        color: var(--accent-lavender-soft);
+        font-size: 1.2rem;
+        letter-spacing: -0.01em;
+    }
+
+    .section-kicker {
+        color: var(--text-muted);
+        font-size: 0.86rem;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 12px;
+    }
+
+    .swatch-card {
+        display: grid;
+        grid-template-columns: 74px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        background: rgba(31, 31, 31, 0.86);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+        cursor: pointer;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .swatch-card:hover {
+        transform: translateY(-1px);
+        border-color: var(--border-hover);
+        box-shadow: 0 0 0 1px rgba(184, 161, 255, 0.12), 0 16px 34px rgba(0, 0, 0, 0.3);
+    }
+
+    .swatch-card:active {
+        transform: translateY(0);
+    }
+
+    .swatch {
+        width: 74px;
+        height: 74px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.05),
+            0 12px 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .meta {
+        min-width: 0;
+    }
+
+    .name {
+        margin: 0 0 2px;
+        color: var(--text-strong);
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .role {
+        margin: 0 0 8px;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+    }
+
+    .code-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        color: var(--text-soft);
+        font-family: "Cascadia Code", "Consolas", "SFMono-Regular", monospace;
+        font-size: 0.82rem;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 2px 7px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.035);
+    }
+
+    body[data-copy-mode="var"] .variable-pill,
+    body[data-copy-mode="hex"] .hex-pill,
+    body[data-copy-mode="rgb"] .rgb-pill {
+        border-color: rgba(184, 161, 255, 0.26);
+        background: rgba(184, 161, 255, 0.13);
+        color: var(--accent-lavender-soft);
+        box-shadow: inset 0 0 10px rgba(184, 161, 255, 0.06);
+    }
+
+    .sample-panel {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 14px;
+    }
+
+    .sample-card {
+        padding: 18px;
+        border: 1px solid var(--border-card);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(180deg, rgba(38, 42, 48, 0.96), rgba(26, 29, 34, 0.96));
+        box-shadow: var(--shadow-card);
+    }
+
+    .sample-card h3 {
+        margin: 0 0 8px;
+        color: var(--accent-lavender-soft);
+        text-shadow: 0 0 8px rgba(184, 161, 255, 0.18);
+    }
+
+    .sample-card p {
+        margin: 0 0 14px;
+        color: var(--text-muted);
+    }
+
+    .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 7px 12px;
+        border: 1px solid var(--border-button);
+        border-radius: 9px;
+        background: linear-gradient(180deg, rgba(40, 45, 52, 1), rgba(28, 32, 37, 1));
+        color: var(--text-soft);
+        text-decoration: none;
+        font-weight: 650;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 1px 6px rgba(0,0,0,0.18);
+    }
+
+    .btn:hover {
+        border-color: var(--border-hover);
+        color: var(--text-hover);
+    }
+
+    .mini-tree {
+        padding: 14px;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        background: var(--bg-panel);
+        color: var(--text-main);
+        font-family: "Cascadia Code", "Consolas", "SFMono-Regular", monospace;
+        font-size: 0.92rem;
+    }
+
+    .folder {
+        color: var(--accent-lavender-soft);
+    }
+
+    .muted {
+        color: var(--text-muted);
+    }
+
+    .footer {
+        margin-top: 34px;
+        color: var(--text-muted);
+        text-align: center;
+        font-size: 0.82rem;
+    }
+
+    .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%) translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        max-width: min(92vw, 680px);
+        padding: 10px 14px;
+        border: 1px solid rgba(184, 161, 255, 0.22);
+        border-radius: 999px;
+        background: rgba(31, 31, 31, 0.96);
+        color: var(--accent-lavender-soft);
+        box-shadow: var(--shadow-card);
+        transition: opacity 0.16s ease, transform 0.16s ease;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 720px) {
+        .page {
+            width: min(100% - 20px, 1100px);
+            padding-top: 20px;
+        }
+
+        .hero {
+            padding: 20px;
+        }
+
+        .sample-panel {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            display: block;
+        }
+
+        .section-kicker {
+            margin-top: 3px;
+        }
+
+        .swatch-card {
+            grid-template-columns: 62px minmax(0, 1fr);
+        }
+
+        .swatch {
+            width: 62px;
+            height: 62px;
+        }
+
+        .segmented {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body data-copy-mode="hex">
+    <main class="page">
+        <section class="hero">
+            <h1>Sammie’s Lab Palette</h1>
+            <p class="subtitle">
+                A quick visual reference for the charcoal-and-lavender design system:
+                dark workshop surfaces, soft text, gentle borders, and sapphic little moon-glow accents.
+            </p>
+
+            <div class="copy-mode-panel">
+                <div class="copy-mode-label">
+                    Click a card to copy:
+                </div>
+                <div class="segmented" role="radiogroup" aria-label="Copy mode">
+                    <input type="radio" id="copyHex" name="copyMode" value="hex" checked>
+                    <label for="copyHex">Hex / RGBA</label>
+
+                    <input type="radio" id="copyRgb" name="copyMode" value="rgb">
+                    <label for="copyRgb">RGB</label>
+
+                    <input type="radio" id="copyVar" name="copyMode" value="var">
+                    <label for="copyVar">Variable</label>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="section">
+            <div class="section-header">
+                <h2>Core Neutrals</h2>
+                <div class="section-kicker">The room, shelves, panels, and controls.</div>
+            </div>
+            <div class="grid">
+
+                <article class="swatch-card"
+                    data-var="--bg-main"
+                    data-hex="#181818"
+                    data-rgb="rgb(24, 24, 24)">
+                    <div class="swatch" style="background:#181818;"></div>
+                    <div class="meta">
+                        <p class="name">Main Background</p>
+                        <p class="role">The deep charcoal base.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--bg-main</span>
+                            <span class="pill hex-pill">#181818</span>
+                            <span class="pill rgb-pill">(24, 24, 24)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--bg-panel"
+                    data-hex="#1F1F1F"
+                    data-rgb="rgb(31, 31, 31)">
+                    <div class="swatch" style="background:#1f1f1f;"></div>
+                    <div class="meta">
+                        <p class="name">Panel Background</p>
+                        <p class="role">Sidebar, file display, quiet surfaces.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--bg-panel</span>
+                            <span class="pill hex-pill">#1F1F1F</span>
+                            <span class="pill rgb-pill">(31, 31, 31)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--bg-panel-alt"
+                    data-hex="#202020"
+                    data-rgb="rgb(32, 32, 32)">
+                    <div class="swatch" style="background:#202020;"></div>
+                    <div class="meta">
+                        <p class="name">Panel Alt</p>
+                        <p class="role">DOCX/document surfaces.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--bg-panel-alt</span>
+                            <span class="pill hex-pill">#202020</span>
+                            <span class="pill rgb-pill">(32, 32, 32)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--bg-control"
+                    data-hex="#20252B"
+                    data-rgb="rgb(32, 37, 43)">
+                    <div class="swatch" style="background:#20252b;"></div>
+                    <div class="meta">
+                        <p class="name">Control Background</p>
+                        <p class="role">Audio controls and darker widgets.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--bg-control</span>
+                            <span class="pill hex-pill">#20252B</span>
+                            <span class="pill rgb-pill">(32, 37, 43)</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section class="section">
+            <div class="section-header">
+                <h2>Borders</h2>
+                <div class="section-kicker">Low-contrast seams, not shouty outlines.</div>
+            </div>
+            <div class="grid">
+
+                <article class="swatch-card"
+                    data-var="--border-subtle"
+                    data-hex="#393939"
+                    data-rgb="rgb(57, 57, 57)">
+                    <div class="swatch" style="background:#393939;"></div>
+                    <div class="meta">
+                        <p class="name">Subtle Border</p>
+                        <p class="role">Default structural border.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--border-subtle</span>
+                            <span class="pill hex-pill">#393939</span>
+                            <span class="pill rgb-pill">(57, 57, 57)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--border-control"
+                    data-hex="#495057"
+                    data-rgb="rgb(73, 80, 87)">
+                    <div class="swatch" style="background:#495057;"></div>
+                    <div class="meta">
+                        <p class="name">Control Border</p>
+                        <p class="role">Neutral control edge.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--border-control</span>
+                            <span class="pill hex-pill">#495057</span>
+                            <span class="pill rgb-pill">(73, 80, 87)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--border-button"
+                    data-hex="#6F6396"
+                    data-rgb="rgb(111, 99, 150)">
+                    <div class="swatch" style="background:#6f6396;"></div>
+                    <div class="meta">
+                        <p class="name">Button Border</p>
+                        <p class="role">Muted lavender-grey button edge.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--border-button</span>
+                            <span class="pill hex-pill">#6F6396</span>
+                            <span class="pill rgb-pill">(111, 99, 150)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--border-hover"
+                    data-hex="#9F8FE0"
+                    data-rgb="rgb(159, 143, 224)">
+                    <div class="swatch" style="background:#9f8fe0;"></div>
+                    <div class="meta">
+                        <p class="name">Hover Border</p>
+                        <p class="role">Interactive hover/focus edge.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--border-hover</span>
+                            <span class="pill hex-pill">#9F8FE0</span>
+                            <span class="pill rgb-pill">(159, 143, 224)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--border-card"
+                    data-hex="#3F4750"
+                    data-rgb="rgb(63, 71, 80)">
+                    <div class="swatch" style="background:#3f4750;"></div>
+                    <div class="meta">
+                        <p class="name">Card Border</p>
+                        <p class="role">Audio/tool card edge.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--border-card</span>
+                            <span class="pill hex-pill">#3F4750</span>
+                            <span class="pill rgb-pill">(63, 71, 80)</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section class="section">
+            <div class="section-header">
+                <h2>Text</h2>
+                <div class="section-kicker">Readable, gentle, never pure white unless necessary.</div>
+            </div>
+            <div class="grid">
+
+                <article class="swatch-card"
+                    data-var="--text-main"
+                    data-hex="#CCCCCC"
+                    data-rgb="rgb(204, 204, 204)">
+                    <div class="swatch" style="background:#cccccc;"></div>
+                    <div class="meta">
+                        <p class="name">Main Text</p>
+                        <p class="role">Default body text.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--text-main</span>
+                            <span class="pill hex-pill">#CCCCCC</span>
+                            <span class="pill rgb-pill">(204, 204, 204)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--text-soft"
+                    data-hex="#D4DDE3"
+                    data-rgb="rgb(212, 221, 227)">
+                    <div class="swatch" style="background:#d4dde3;"></div>
+                    <div class="meta">
+                        <p class="name">Soft Text</p>
+                        <p class="role">Buttons and secondary emphasis.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--text-soft</span>
+                            <span class="pill hex-pill">#D4DDE3</span>
+                            <span class="pill rgb-pill">(212, 221, 227)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--text-strong"
+                    data-hex="#D7E3EA"
+                    data-rgb="rgb(215, 227, 234)">
+                    <div class="swatch" style="background:#d7e3ea;"></div>
+                    <div class="meta">
+                        <p class="name">Strong Text</p>
+                        <p class="role">Filenames and high-importance labels.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--text-strong</span>
+                            <span class="pill hex-pill">#D7E3EA</span>
+                            <span class="pill rgb-pill">(215, 227, 234)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--text-muted"
+                    data-hex="#7F8B92"
+                    data-rgb="rgb(127, 139, 146)">
+                    <div class="swatch" style="background:#7f8b92;"></div>
+                    <div class="meta">
+                        <p class="name">Muted Text</p>
+                        <p class="role">Metadata, hints, quiet labels.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--text-muted</span>
+                            <span class="pill hex-pill">#7F8B92</span>
+                            <span class="pill rgb-pill">(127, 139, 146)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--text-hover"
+                    data-hex="#E6EEF4"
+                    data-rgb="rgb(230, 238, 244)">
+                    <div class="swatch" style="background:#e6eef4;"></div>
+                    <div class="meta">
+                        <p class="name">Hover Text</p>
+                        <p class="role">Brightened text on hover.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--text-hover</span>
+                            <span class="pill hex-pill">#E6EEF4</span>
+                            <span class="pill rgb-pill">(230, 238, 244)</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section class="section">
+            <div class="section-header">
+                <h2>Lavender Accents</h2>
+                <div class="section-kicker">The “Sammie” part of Sammie’s Lab.</div>
+            </div>
+            <div class="grid">
+
+                <article class="swatch-card"
+                    data-var="--accent-lavender"
+                    data-hex="#B8A1FF"
+                    data-rgb="rgb(184, 161, 255)">
+                    <div class="swatch" style="background:#b8a1ff;"></div>
+                    <div class="meta">
+                        <p class="name">Lavender</p>
+                        <p class="role">Primary deep accent.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--accent-lavender</span>
+                            <span class="pill hex-pill">#B8A1FF</span>
+                            <span class="pill rgb-pill">(184, 161, 255)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--accent-lavender-soft"
+                    data-hex="#C7B6FF"
+                    data-rgb="rgb(199, 182, 255)">
+                    <div class="swatch" style="background:#c7b6ff;"></div>
+                    <div class="meta">
+                        <p class="name">Soft Lavender</p>
+                        <p class="role">Titles, active labels, branding.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--accent-lavender-soft</span>
+                            <span class="pill hex-pill">#C7B6FF</span>
+                            <span class="pill rgb-pill">(199, 182, 255)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--accent-lavender-muted"
+                    data-hex="#A996E8"
+                    data-rgb="rgb(169, 150, 232)">
+                    <div class="swatch" style="background:#a996e8;"></div>
+                    <div class="meta">
+                        <p class="name">Muted Lavender</p>
+                        <p class="role">Small labels and quiet accent text.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--accent-lavender-muted</span>
+                            <span class="pill hex-pill">#A996E8</span>
+                            <span class="pill rgb-pill">(169, 150, 232)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--accent-underline"
+                    data-hex="#D8CCFF"
+                    data-rgb="rgb(216, 204, 255)">
+                    <div class="swatch" style="background:#d8ccff;"></div>
+                    <div class="meta">
+                        <p class="name">Underline Accent</p>
+                        <p class="role">Hover/underline accent replacement.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--accent-underline</span>
+                            <span class="pill hex-pill">#D8CCFF</span>
+                            <span class="pill rgb-pill">(216, 204, 255)</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section class="section">
+            <div class="section-header">
+                <h2>Glows</h2>
+                <div class="section-kicker">Soft magic-light around useful things.</div>
+            </div>
+            <div class="grid">
+
+                <article class="swatch-card"
+                    data-var="--glow-primary-soft"
+                    data-hex="rgba(184, 161, 255, 0.15)"
+                    data-rgb="rgba(184, 161, 255, 0.15)">
+                    <div class="swatch" style="background:#1f1f1f; box-shadow:0 0 0 7px rgba(184, 161, 255, 0.15), inset 0 0 28px rgba(184, 161, 255, 0.08); border-color:rgba(184, 161, 255, 0.15);"></div>
+                    <div class="meta">
+                        <p class="name">Glow Soft</p>
+                        <p class="role">Subtle active rings.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--glow-primary-soft</span>
+                            <span class="pill hex-pill">rgba(184, 161, 255, 0.15)</span>
+                            <span class="pill rgb-pill">rgba(184, 161, 255, 0.15)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--glow-primary"
+                    data-hex="rgba(184, 161, 255, 0.2)"
+                    data-rgb="rgba(184, 161, 255, 0.2)">
+                    <div class="swatch" style="background:#1f1f1f; box-shadow:0 0 0 7px rgba(184, 161, 255, 0.2), inset 0 0 28px rgba(184, 161, 255, 0.08); border-color:rgba(184, 161, 255, 0.2);"></div>
+                    <div class="meta">
+                        <p class="name">Glow</p>
+                        <p class="role">Active pane borders/glows.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--glow-primary</span>
+                            <span class="pill hex-pill">rgba(184, 161, 255, 0.2)</span>
+                            <span class="pill rgb-pill">rgba(184, 161, 255, 0.2)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--glow-primary-strong"
+                    data-hex="rgba(184, 161, 255, 0.24)"
+                    data-rgb="rgba(184, 161, 255, 0.24)">
+                    <div class="swatch" style="background:#1f1f1f; box-shadow:0 0 0 7px rgba(184, 161, 255, 0.24), inset 0 0 28px rgba(184, 161, 255, 0.08); border-color:rgba(184, 161, 255, 0.24);"></div>
+                    <div class="meta">
+                        <p class="name">Glow Strong</p>
+                        <p class="role">More visible feature glow.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--glow-primary-strong</span>
+                            <span class="pill hex-pill">rgba(184, 161, 255, 0.24)</span>
+                            <span class="pill rgb-pill">rgba(184, 161, 255, 0.24)</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="swatch-card"
+                    data-var="--glow-primary-inner"
+                    data-hex="rgba(184, 161, 255, 0.08)"
+                    data-rgb="rgba(184, 161, 255, 0.08)">
+                    <div class="swatch" style="background:#1f1f1f; box-shadow:0 0 0 7px rgba(184, 161, 255, 0.08), inset 0 0 28px rgba(184, 161, 255, 0.08); border-color:rgba(184, 161, 255, 0.08);"></div>
+                    <div class="meta">
+                        <p class="name">Inner Glow</p>
+                        <p class="role">Soft internal card lighting.</p>
+                        <div class="code-line">
+                            <span class="pill variable-pill">--glow-primary-inner</span>
+                            <span class="pill hex-pill">rgba(184, 161, 255, 0.08)</span>
+                            <span class="pill rgb-pill">rgba(184, 161, 255, 0.08)</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="sample-panel">
+            <div class="sample-card">
+                <h3>Sample Tool Card</h3>
+                <p>This is how the palette feels when it’s assembled into a little Sammie’s Lab-style component.</p>
+                <div class="button-row">
+                    <a class="btn" href="#">Open Notebook</a>
+                    <a class="btn" href="#">View Project</a>
+                </div>
+            </div>
+
+            <div class="mini-tree">
+                <div class="folder">▸ Sammie’s Lab</div>
+                <div>&nbsp;&nbsp;<span class="folder">▸ tools</span></div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;Sammie’s Notebook.html</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="muted">future-bean-engine.js</span></div>
+                <div>&nbsp;&nbsp;<span class="folder">▸ assets</span></div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;science-bean.png</div>
+            </div>
+        </section>
+
+        <div class="footer">
+            Sammie’s Lab palette preview · charcoal, lavender, and tasteful goblin engineering
+        </div>
+    </main>
+
+    <div class="toast" id="toast">Copied!</div>
+
+<script>
+    const toast = document.getElementById("toast");
+    let toastTimer = null;
+
+    function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
+    }
+
+    function getCopyMode() {
+        return document.querySelector("input[name='copyMode']:checked")?.value || "hex";
+    }
+
+    function getCopyLabel(mode) {
+        if (mode === "var") return "variable";
+        if (mode === "rgb") return "RGB";
+        return "hex/RGBA";
+    }
+
+    document.querySelectorAll("input[name='copyMode']").forEach((input) => {
+        input.addEventListener("change", () => {
+            document.body.dataset.copyMode = getCopyMode();
+        });
+    });
+
+    document.querySelectorAll(".swatch-card").forEach((card) => {
+        card.addEventListener("click", async () => {
+            const mode = getCopyMode();
+            const value = card.dataset[mode];
+            const label = getCopyLabel(mode);
+
+            try {
+                await navigator.clipboard.writeText(value);
+                showToast(`Copied ${label}: ${value}`);
+            } catch {
+                showToast(`${label}: ${value}`);
+            }
+        });
+    });
+</script>
+</body>
+</html>
