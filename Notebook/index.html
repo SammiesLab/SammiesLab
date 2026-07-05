@@ -7,10 +7,10 @@
 
 <head>
     <style>
+        /* :root {
+            } */
+            
         :root {
-            --accent-lavender: #b8a1ff;
-            --accent-lavender-soft: #c7b6ff;
-            --accent-lavender-muted: #a996e8;
             --glow-lavender-soft: rgba(184, 161, 255, 0.18);
             --glow-lavender: rgba(184, 161, 255, 0.24);
             --accent-primary: var(--accent-lavender-soft);
@@ -21,6 +21,42 @@
             --glow-primary: rgba(184, 161, 255, 0.2);
             --glow-primary-strong: rgba(184, 161, 255, 0.24);
             --glow-primary-inner: rgba(184, 161, 255, 0.08);
+
+
+
+            --bg-main: #181818;
+            --bg-panel: #1f1f1f;
+            --bg-panel-alt: #202020;
+            --bg-control: #20252b;
+
+            --border-subtle: #393939;
+            --border-control: #495057;
+            --border-button: #6f6396;
+            --border-hover: #9f8fe0;
+            --border-card: #3f4750;
+
+            --text-main: #cccccc;
+            --text-soft: #d4dde3;
+            --text-strong: #d7e3ea;
+            --text-muted: #7f8b92;
+            --text-hover: #e6eef4;
+
+            --accent-lavender: #b8a1ff;
+            --accent-lavender-soft: #c7b6ff;
+            --accent-lavender-muted: #a996e8;
+            --accent-underline: #d8ccff;
+
+            --glow-primary-soft: rgba(184, 161, 255, 0.15);
+            --glow-primary: rgba(184, 161, 255, 0.2);
+            --glow-primary-strong: rgba(184, 161, 255, 0.24);
+            --glow-primary-inner: rgba(184, 161, 255, 0.08);
+
+            --radius-sm: 10px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+
+            --shadow-panel: 0px 0px 30px rgba(15, 15, 15, 1);
+            --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.35);
         }
 
         ::selection {
@@ -634,6 +670,29 @@
             opacity: 0.82;
             user-select: none;
             text-shadow: 0 0 8px rgba(184, 161, 255, 0.14);
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-button);
+            border-radius: 100px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* Little square where vertical + horizontal scrollbars meet */
+        ::-webkit-scrollbar-corner {
+            background: var(--bg-main);
         }
 
     </style>
