@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html style="background-color: #181818;">
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <title>Sammie's Character Forge</title>
+
+  <link rel="icon" id="pageFavicon" type="image/x-icon" href="icon.png">
+</head>
+
+<style>
+    :root {
+        --bg-main: #181818;
+        --bg-panel: #1f1f1f;
+        --bg-panel-alt: #202020;
+        --bg-control: #20252b;
+
+        --border-subtle: #393939;
+        --border-control: #495057;
+        --border-button: #6f6396;
+        --border-hover: #9f8fe0;
+        --border-card: #3f4750;
+
+        --text-main: #cccccc;
+        --text-soft: #d4dde3;
+        --text-strong: #d7e3ea;
+        --text-muted: #7f8b92;
+        --text-hover: #e6eef4;
+
+        --accent-lavender: #b8a1ff;
+        --accent-lavender-soft: #c7b6ff;
+        --accent-lavender-muted: #a996e8;
+        --accent-underline: #d8ccff;
+
+        --glow-primary-soft: rgba(184, 161, 255, 0.15);
+        --glow-primary: rgba(184, 161, 255, 0.2);
+        --glow-primary-strong: rgba(184, 161, 255, 0.24);
+        --glow-primary-inner: rgba(184, 161, 255, 0.08);
+
+        --radius-sm: 10px;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+
+        --shadow-panel: 0px 0px 30px rgba(15, 15, 15, 1);
+        --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        min-height: 100%;
+    }
+
+    body {
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    label {
+        color: var(--text-soft);
+        font-size: 0.92rem;
+    }
+
+    input,
+    select,
+    textarea {
+        background-color: var(--bg-main);
+        border: var(--border-control) 1px solid;
+        border-radius: 10px;
+        padding: 10px 12px;
+        caret-color: var(--accent-lavender);
+        color: var(--text-soft);
+        margin-top: 6px;
+        margin-bottom: 14px;
+        width: 100%;
+        font: inherit;
+    }
+
+    textarea {
+        min-height: 86px;
+        resize: vertical;
+        line-height: 1.35;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--accent-lavender);
+        box-shadow: 0 0 10px var(--glow-primary-soft);
+    }
+
+    hr {
+        border-color: var(--border-subtle);
+        opacity: 1;
+        margin: 18px 0;
+    }
+
+    h2,
+    h3,
+    h4 {
+        color: var(--accent-lavender-soft);
+    }
+
+    h2 {
+        margin-bottom: 12px;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+        margin-top: 8px;
+        margin-bottom: 14px;
+    }
+
+    h4 {
+        font-size: 1.05rem;
+        margin-bottom: 10px;
+    }
+
+    .app-row {
+        margin: auto;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .side-panel {
+        max-width: 27% !important;
+        background-color: var(--bg-panel);
+        height: 100dvh;
+        padding: 18px;
+        box-shadow: var(--shadow-panel);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #prompt_preview_pane {
+        background-color: var(--bg-panel);
+        box-shadow: var(--shadow-panel);
+        max-width: 40%;
+        height: calc(100dvh - 32px);
+        border-radius: 30px;
+        padding: 30px;
+        text-align: left;
+        overflow-y: auto;
+        overflow-x: hidden;
+        line-height: 1.45;
+    }
+
+    #prompt_preview_pane p {
+        margin-bottom: 0.65rem;
+    }
+
+    .preview-muted {
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .section-note {
+        color: var(--text-muted);
+        font-size: 0.86rem;
+        margin-top: -8px;
+        margin-bottom: 10px;
+    }
+
+    .checkbox-group {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-panel-alt);
+        border: 1px solid var(--border-card);
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        accent-color: var(--accent-lavender);
+    }
+
+    .copy-button {
+        background: var(--bg-control);
+        color: var(--text-soft);
+        border: 1px solid var(--border-button);
+        border-radius: var(--radius-sm);
+        padding: 9px 12px;
+        margin-bottom: 14px;
+        width: 100%;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    }
+
+    .copy-button:hover {
+        color: var(--text-hover);
+        border-color: var(--border-hover);
+        box-shadow: 0 0 14px var(--glow-primary);
+    }
+
+    .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .button-row .copy-button {
+        margin-bottom: 0;
+    }
+
+    .mini-status {
+        min-height: 1.2em;
+        color: var(--text-muted);
+        font-size: 0.86rem;
+        margin-top: -4px;
+        margin-bottom: 14px;
+        text-align: center;
+    }
+
+    #prompt_preview_pane::-webkit-scrollbar,
+    .side-panel::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    #prompt_preview_pane::-webkit-scrollbar-track,
+    .side-panel::-webkit-scrollbar-track {
+        background: var(--bg-main);
+    }
+
+    #prompt_preview_pane::-webkit-scrollbar-thumb,
+    .side-panel::-webkit-scrollbar-thumb {
+        background: var(--border-button);
+        border-radius: 100px;
+    }
+
+    #prompt_preview_pane::-webkit-scrollbar-thumb:hover,
+    .side-panel::-webkit-scrollbar-thumb:hover {
+        background: var(--border-hover);
+    }
+</style>
+
+<body>
+  <div class="row app-row">
+      <div class="col side-panel">
+        <h3>General Info</h3>
+        <div class="row">
+            <label class="col">
+                Name
+                <input class="prompt-control" id="charName" type="text" placeholder="Character name...">
+            </label>
+
+            <label class="col">
+                Project
+                <input class="prompt-control" id="charProject" type="text" placeholder="World / project...">
+            </label>
+        </div>
+
+        <div class="row">
+            <label class="col">
+                Age
+                <input class="prompt-control" id="charAge" type="text" placeholder="Age / apparent age...">
+            </label>
+
+            <label class="col">
+                Species/Race
+                <input class="prompt-control" id="charRace" type="text" placeholder="Species / race...">
+            </label>
+        </div>
+
+        <div class="row">
+            <label class="col">
+                Gender Presentation
+                <select class="prompt-control" id="charGender">
+                    <option value="">Choose...</option>
+                    <option value="woman">Woman</option>
+                    <option value="man">Man</option>
+                    <option value="trans man">Trans Man</option>
+                    <option value="trans woman">Trans Woman</option>
+                    <option value="nonbinary person">Nonbinary</option>
+                    <option value="agender person">Agender</option>
+                    <option value="person">Other / person</option>
+                </select>
+            </label>
+
+            <label class="col">
+                Role / Archetype
+                <input class="prompt-control" id="charRole" type="text" placeholder="Rogue, scholar, witch, mechanic...">
+            </label>
+        </div>
+
+        <label>
+            Core Vibe
+            <textarea class="prompt-control" id="charVibe" placeholder="The emotional read: shy menace, regal disaster, cozy goth, dangerous sweetheart..."></textarea>
+        </label>
+
+        <hr>
+
+        <h3>Physical Description</h3>
+        <div class="row">
+            <label class="col">
+                Height / Size
+                <input class="prompt-control" id="charHeight" type="text" placeholder="Tall, petite, 5'4, imposing...">
+            </label>
+
+            <label class="col">
+                Build
+                <input class="prompt-control" id="charBuild" type="text" placeholder="Lean, muscular, soft, wiry...">
+            </label>
+        </div>
+
+        <label>
+            Face / Features
+            <textarea class="prompt-control" id="charFace" placeholder="Face shape, cheekbones, brows, mouth, expression baseline..."></textarea>
+        </label>
+
+        <div class="row">
+            <label class="col">
+                Hair
+                <input class="prompt-control" id="charHair" type="text" placeholder="Hair color / style...">
+            </label>
+
+            <label class="col">
+                Eyes
+                <input class="prompt-control" id="charEyes" type="text" placeholder="Eye color / eye details...">
+            </label>
+        </div>
+
+        <div class="row">
+            <label class="col">
+                Skin
+                <input class="prompt-control" id="charSkin" type="text" placeholder="Skin tone and complexion...">
+            </label>
+
+            <label class="col">
+                Markings
+                <input class="prompt-control" id="charMarkings" type="text" placeholder="Tattoos, scars, freckles...">
+            </label>
+        </div>
+
+        <label>
+            Fantasy / Nonhuman Details
+            <textarea class="prompt-control" id="charAdditionalDetails" placeholder="Horns, tail, ears, wings, fangs, claws, aura..."></textarea>
+        </label>
+
+        <hr>
+
+        <h3>Wardrobe & Props</h3>
+        <label>
+            Clothing / Outfit
+            <textarea class="prompt-control" id="charClothing" placeholder="Main outfit, layers, fabrics, fit, silhouette..."></textarea>
+        </label>
+
+        <label>
+            Accessories
+            <textarea class="prompt-control" id="charAccessories" placeholder="Jewelry, glasses, bags, belts, pins, charms..."></textarea>
+        </label>
+
+        <label>
+            Props / Tools
+            <textarea class="prompt-control" id="charProps" placeholder="Book, cane, wrench, sword, camera, spellbook..."></textarea>
+        </label>
+
+        <label>
+            Wardrobe Colors / Materials
+            <input class="prompt-control" id="charWardrobeColors" type="text" placeholder="Black leather, warm brass, lavender accents...">
+        </label>
+      </div>
+
+      <div class="col mx-auto m-3" id="prompt_preview_pane"></div>
+
+      <div class="col side-panel">
+        <button class="copy-button" id="copyPromptButton" type="button">Copy Prompt Text</button>
+
+        <div class="button-row">
+            <button class="copy-button" id="saveCharacterJsonButton" type="button">Save JSON</button>
+            <button class="copy-button" id="loadCharacterJsonButton" type="button">Load JSON</button>
+        </div>
+        <input id="characterJsonInput" type="file" accept=".json,application/json" hidden>
+        <p class="mini-status" id="jsonStatus"></p>
+
+        <h3>Image Details</h3>
+        <div class="row">
+            <label class="col">
+                Type
+                <select class="prompt-control" id="imgType">
+                    <option value="">Choose...</option>
+                    <option value="A full-body standalone character portrait">Full Body</option>
+                    <option value="A tight head-and-shoulders character portrait">Headshot</option>
+                    <option value="A bust portrait">Bust</option>
+                    <option value="A character turnaround sheet showing front, side, and back views">Turnaround</option>
+                    <option value="An expression sheet showing multiple facial expressions">Expression Sheet</option>
+                    <option value="A cinematic character scene">Scene</option>
+                    <option value="A profile-picture avatar portrait">Profile Avatar</option>
+                </select>
+            </label>
+
+            <label class="col">
+                Aspect Ratio
+                <select class="prompt-control" id="imgAR">
+                    <option value="">Choose...</option>
+                    <option value="16:9">16:9</option>
+                    <option value="9:16">9:16</option>
+                    <option value="2:3">2:3</option>
+                    <option value="3:2">3:2</option>
+                    <option value="1:1">1:1</option>
+                    <option value="4:5">4:5</option>
+                    <option value="5:4">5:4</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="row">
+            <label class="col">
+                Composition
+                <select class="prompt-control" id="imgComposition">
+                    <option value="">Choose...</option>
+                    <option value="centered composition with a clean readable silhouette">Centered</option>
+                    <option value="three-quarter composition with the character turned slightly toward the viewer">Three-Quarter</option>
+                    <option value="dynamic angled composition with strong motion and energy">Dynamic Angle</option>
+                    <option value="symmetrical character plate composition">Symmetrical Plate</option>
+                    <option value="close cinematic framing with strong emotional focus">Cinematic Close Framing</option>
+                </select>
+            </label>
+
+            <label class="col">
+                View Angle
+                <select class="prompt-control" id="imgViewAngle">
+                    <option value="">Choose...</option>
+                    <option value="facing the viewer">Facing viewer</option>
+                    <option value="three-quarter view">Three-quarter view</option>
+                    <option value="profile view">Profile view</option>
+                    <option value="looking slightly down toward the viewer">Slightly above viewer</option>
+                    <option value="viewed from a slightly low heroic angle">Low heroic angle</option>
+                </select>
+            </label>
+        </div>
+
+        <label>
+            Pose
+            <textarea class="prompt-control" id="imgPose" placeholder="Standing, leaning, seated, arms crossed, holding a book, hand on cane..."></textarea>
+        </label>
+
+        <label>
+            Expression
+            <textarea class="prompt-control" id="imgExpression" placeholder="Soft smile, dangerous smirk, guarded stare, tired affection..."></textarea>
+        </label>
+
+        <hr>
+
+        <h3>Style & Rendering</h3>
+        <label>
+            Style Preset
+            <select class="prompt-control" id="imgStyle">
+                <option value="">Choose...</option>
+                <option value="hollowbright">Classic Hollowbright Bespoke</option>
+                <option value="prestigeComic">Prestige Comic / Graphic Novel</option>
+                <option value="cyberpunkNoir">Cyberpunk Noir</option>
+                <option value="cozyFantasy">Cozy Fantasy</option>
+                <option value="epicFantasy">Epic Fantasy</option>
+                <option value="punkGrunge">Punk / Grunge Promo</option>
+                <option value="custom">Custom / Manual</option>
+            </select>
+        </label>
+
+        <label>
+            Custom Style Notes
+            <textarea class="prompt-control" id="imgCustomStyle" placeholder="Use this to add or override style details..."></textarea>
+        </label>
+
+        <div class="checkbox-group">
+            <label class="checkbox-label">
+                <input class="prompt-control quality-toggle" type="checkbox" value="expressive ink linework">
+                Expressive ink linework
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control quality-toggle" type="checkbox" value="rich painterly shading">
+                Rich painterly shading
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control quality-toggle" type="checkbox" value="grounded anatomy and natural proportions">
+                Grounded anatomy
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control quality-toggle" type="checkbox" value="cinematic lighting and moody shadows">
+                Cinematic lighting
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control quality-toggle" type="checkbox" value="polished high-end character illustration finish">
+                Polished finish
+            </label>
+        </div>
+
+        <label>
+            Rendering Notes
+            <textarea class="prompt-control" id="imgRenderingNotes" placeholder="Texture, polish, line quality, realism level, brushwork..."></textarea>
+        </label>
+
+        <hr>
+
+        <h3>Setting & Mood</h3>
+        <label>
+            Background / Setting
+            <textarea class="prompt-control" id="imgBackground" placeholder="Library, alley, workshop, candlelit room, plain backdrop..."></textarea>
+        </label>
+
+        <label>
+            Lighting
+            <textarea class="prompt-control" id="imgLighting" placeholder="Warm lamplight, soft window light, neon glow, stormy rim light..."></textarea>
+        </label>
+
+        <label>
+            Mood / Atmosphere
+            <textarea class="prompt-control" id="imgMood" placeholder="Romantic, haunted, cozy, dangerous, wistful, heroic..."></textarea>
+        </label>
+
+        <hr>
+
+        <h3>Locks & Rules</h3>
+        <p class="section-note">Use these for the “do not mess this up, image goblin” details.</p>
+
+        <label>
+            Continuity Locks
+            <textarea class="prompt-control" id="continuityLocks" placeholder="Must keep exact eye type, hair color, horns, tattoos, signature outfit..."></textarea>
+        </label>
+
+        <label>
+            Must Include
+            <textarea class="prompt-control" id="mustInclude" placeholder="Required visual details, props, colors, symbols..."></textarea>
+        </label>
+
+        <label>
+            Must Avoid
+            <textarea class="prompt-control" id="mustAvoid" placeholder="Things the image should not add or change..."></textarea>
+        </label>
+
+        <div class="checkbox-group">
+            <label class="checkbox-label">
+                <input class="prompt-control rule-toggle" type="checkbox" value="no text">
+                No text
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control rule-toggle" type="checkbox" value="no captions">
+                No captions
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control rule-toggle" type="checkbox" value="no labels">
+                No labels
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control rule-toggle" type="checkbox" value="no borders">
+                No borders
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control rule-toggle" type="checkbox" value="no watermarks">
+                No watermarks
+            </label>
+            <label class="checkbox-label">
+                <input class="prompt-control rule-toggle" type="checkbox" value="no meta descriptions anywhere in the image">
+                No meta descriptions
+            </label>
+        </div>
+      </div>
+  </div>
+</body>
+
+<script>
+    const preview = document.getElementById("prompt_preview_pane");
+    const copyButton = document.getElementById("copyPromptButton");
+    const saveJsonButton = document.getElementById("saveCharacterJsonButton");
+    const loadJsonButton = document.getElementById("loadCharacterJsonButton");
+    const characterJsonInput = document.getElementById("characterJsonInput");
+    const jsonStatus = document.getElementById("jsonStatus");
+    let currentPromptText = "";
+
+    const stylePresets = {
+        hollowbright: "Classic Hollowbright bespoke graphic novel style: cinematic dark fantasy romance, expressive ink linework, rich painterly shading, elegant character design, atmospheric lighting, emotionally grounded storytelling, and the polish of an official prestige character plate.",
+        prestigeComic: "A cinematic prestige comic book / graphic novel illustration with sharp expressive linework, rich painterly shading, dramatic lighting, grounded anatomy, strong silhouette design, and high-end character-art polish.",
+        cyberpunkNoir: "A grounded cyberpunk noir illustration with rain-slick atmosphere, neon edge light, deep shadows, cinematic contrast, subtle futuristic details, and emotionally charged character-focused framing.",
+        cozyFantasy: "A warm cozy fantasy illustration with gentle lighting, soft painterly texture, inviting atmosphere, expressive character acting, grounded magic, and charming storybook detail without becoming childish.",
+        epicFantasy: "A cinematic epic fantasy character illustration with dramatic atmosphere, refined costume detail, heroic composition, painterly lighting, rich materials, and polished prestige fantasy art direction.",
+        punkGrunge: "A gritty punk / grunge promo illustration with raw attitude, sharp linework, neon spill, worn textures, graffiti energy, torn-poster atmosphere, and underground zine-cover swagger.",
+        custom: ""
+    };
+
+    function value(id) {
+        return document.getElementById(id).value.trim();
+    }
+
+    function escapeHTML(string) {
+        return string
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;")
+            .replaceAll("\n", "<br>");
+    }
+
+    function hasText(value) {
+        return value && value.trim() !== "";
+    }
+
+    function checkedValues(selector) {
+        return Array.from(document.querySelectorAll(selector + ":checked"))
+            .map(element => element.value.trim())
+            .filter(hasText);
+    }
+
+    function addLine(lines, textLines, html, text) {
+        lines.push(html);
+        textLines.push(text ?? html.replace(/<[^>]*>/g, ""));
+    }
+
+    function addField(lines, textLines, label, content) {
+        if (!hasText(content)) return;
+
+        addLine(
+            lines,
+            textLines,
+            `<p><b>${label}:</b> ${escapeHTML(content)}</p>`,
+            `${label}: ${content}`
+        );
+    }
+
+    function addListField(lines, textLines, label, items) {
+        if (!items.length) return;
+
+        const htmlItems = items.map(item => `<li>${escapeHTML(item)}</li>`).join("");
+        const textItems = items.map(item => `- ${item}`).join("\n");
+
+        addLine(
+            lines,
+            textLines,
+            `<p><b>${label}:</b></p><ul>${htmlItems}</ul>`,
+            `${label}:\n${textItems}`
+        );
+    }
+
+    function addSection(lines, textLines, title, values) {
+        const hasAnyValue = values.some(value => {
+            if (Array.isArray(value)) return value.length > 0;
+            return hasText(value);
+        });
+
+        if (hasAnyValue) {
+            addLine(lines, textLines, `<hr><h4>${title}</h4>`, `\n${title}:`);
+        }
+
+        return hasAnyValue;
+    }
+
+    function updatePrompt() {
+        const c = {
+            name: value("charName"),
+            project: value("charProject"),
+            age: value("charAge"),
+            race: value("charRace"),
+            gender: value("charGender"),
+            role: value("charRole"),
+            vibe: value("charVibe"),
+
+            height: value("charHeight"),
+            build: value("charBuild"),
+            face: value("charFace"),
+            hair: value("charHair"),
+            eyes: value("charEyes"),
+            skin: value("charSkin"),
+            markings: value("charMarkings"),
+            other: value("charAdditionalDetails"),
+
+            clothing: value("charClothing"),
+            accessories: value("charAccessories"),
+            props: value("charProps"),
+            wardrobeColors: value("charWardrobeColors"),
+
+            continuityLocks: value("continuityLocks"),
+            mustInclude: value("mustInclude"),
+            mustAvoid: value("mustAvoid")
+        };
+
+        const img = {
+            type: value("imgType"),
+            aspectRatio: value("imgAR"),
+            composition: value("imgComposition"),
+            viewAngle: value("imgViewAngle"),
+            pose: value("imgPose"),
+            expression: value("imgExpression"),
+            styleKey: value("imgStyle"),
+            customStyle: value("imgCustomStyle"),
+            renderingNotes: value("imgRenderingNotes"),
+            background: value("imgBackground"),
+            lighting: value("imgLighting"),
+            mood: value("imgMood"),
+            qualityToggles: checkedValues(".quality-toggle"),
+            ruleToggles: checkedValues(".rule-toggle")
+        };
+
+        const lines = [];
+        const textLines = [];
+        const titleName = hasText(c.name) ? c.name : "Unnamed Character";
+
+        addLine(lines, textLines, `<h2>Portrait Prompt For ${escapeHTML(titleName)}</h2>`, `Portrait Prompt For ${titleName}`);
+
+        if (!hasText(c.name) && !hasText(img.type)) {
+            addLine(
+                lines,
+                textLines,
+                `<p class="preview-muted">Start filling out fields and your prompt will assemble itself here.</p>`,
+                "Start filling out fields and your prompt will assemble itself here."
+            );
+        }
+
+        if (hasText(img.type) && hasText(c.name)) {
+            addLine(lines, textLines, `<p>${escapeHTML(img.type)} of <b>${escapeHTML(c.name)}</b>.</p>`, `${img.type} of ${c.name}.`);
+        } else if (hasText(img.type)) {
+            addLine(lines, textLines, `<p>${escapeHTML(img.type)}.</p>`, `${img.type}.`);
+        }
+
+        addField(lines, textLines, "Aspect Ratio", img.aspectRatio);
+
+        addSection(lines, textLines, "Style", [img.styleKey, img.customStyle, img.qualityToggles, img.renderingNotes]);
+        const presetText = stylePresets[img.styleKey] || "";
+        addField(lines, textLines, "Style Preset", presetText);
+        addField(lines, textLines, "Custom Style Notes", img.customStyle);
+        addListField(lines, textLines, "Rendering Requirements", img.qualityToggles);
+        addField(lines, textLines, "Additional Rendering Notes", img.renderingNotes);
+
+        addSection(lines, textLines, "General Info", [c.project, c.age, c.race, c.gender, c.role, c.vibe]);
+        addField(lines, textLines, "Project / World", c.project);
+        addField(lines, textLines, "Age", c.age);
+        addField(lines, textLines, "Species / Race", c.race);
+        addField(lines, textLines, "Gender Presentation", c.gender);
+        addField(lines, textLines, "Role / Archetype", c.role);
+        addField(lines, textLines, "Core Vibe", c.vibe);
+
+        addSection(lines, textLines, "Physical Description", [c.height, c.build, c.face, c.hair, c.eyes, c.skin, c.markings, c.other]);
+        addField(lines, textLines, "Height / Size", c.height);
+        addField(lines, textLines, "Build", c.build);
+        addField(lines, textLines, "Face / Features", c.face);
+        addField(lines, textLines, "Hair", c.hair);
+        addField(lines, textLines, "Eyes", c.eyes);
+        addField(lines, textLines, "Skin", c.skin);
+        addField(lines, textLines, "Markings", c.markings);
+        addField(lines, textLines, "Fantasy / Nonhuman Details", c.other);
+
+        addSection(lines, textLines, "Wardrobe & Props", [c.clothing, c.accessories, c.props, c.wardrobeColors]);
+        addField(lines, textLines, "Clothing / Outfit", c.clothing);
+        addField(lines, textLines, "Accessories", c.accessories);
+        addField(lines, textLines, "Props / Tools", c.props);
+        addField(lines, textLines, "Wardrobe Colors / Materials", c.wardrobeColors);
+
+        addSection(lines, textLines, "Pose & Composition", [img.composition, img.viewAngle, img.pose, img.expression]);
+        addField(lines, textLines, "Composition", img.composition);
+        addField(lines, textLines, "View Angle", img.viewAngle);
+        addField(lines, textLines, "Pose", img.pose);
+        addField(lines, textLines, "Expression", img.expression);
+
+        addSection(lines, textLines, "Setting & Mood", [img.background, img.lighting, img.mood]);
+        addField(lines, textLines, "Background / Setting", img.background);
+        addField(lines, textLines, "Lighting", img.lighting);
+        addField(lines, textLines, "Mood / Atmosphere", img.mood);
+
+        addSection(lines, textLines, "Continuity Requirements", [c.continuityLocks, c.mustInclude, c.mustAvoid, img.ruleToggles]);
+        addField(lines, textLines, "Continuity Locks", c.continuityLocks);
+        addField(lines, textLines, "Must Include", c.mustInclude);
+        addField(lines, textLines, "Must Avoid", c.mustAvoid);
+        addListField(lines, textLines, "Exclusions", img.ruleToggles);
+
+        preview.innerHTML = lines.join("\n");
+        currentPromptText = textLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    }
+
+    function setJsonStatus(message) {
+        jsonStatus.textContent = message;
+
+        if (message) {
+            setTimeout(() => {
+                if (jsonStatus.textContent === message) {
+                    jsonStatus.textContent = "";
+                }
+            }, 2200);
+        }
+    }
+
+    function slugifyFilename(text) {
+        const fallback = "character";
+        const slug = (text || fallback)
+            .toLowerCase()
+            .trim()
+            .replace(/['"]/g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+
+        return slug || fallback;
+    }
+
+    function collectCharacterData() {
+        const fields = {};
+
+        document.querySelectorAll(".prompt-control").forEach(control => {
+            if (!control.id || control.type === "checkbox") return;
+            fields[control.id] = control.value;
+        });
+
+        return {
+            app: "Sammie's Character Forge",
+            saveVersion: 1,
+            savedAt: new Date().toISOString(),
+            characterName: value("charName"),
+            fields: fields,
+            toggles: {
+                quality: checkedValues(".quality-toggle"),
+                rules: checkedValues(".rule-toggle")
+            }
+        };
+    }
+
+    function downloadCharacterJson() {
+        const data = collectCharacterData();
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${slugifyFilename(data.characterName)}-character-forge.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        URL.revokeObjectURL(url);
+        setJsonStatus("Character JSON saved!");
+    }
+
+    function setCheckedValues(selector, values) {
+        const selectedValues = new Set((values || []).map(value => value.trim()));
+
+        document.querySelectorAll(selector).forEach(control => {
+            control.checked = selectedValues.has(control.value.trim());
+        });
+    }
+
+    function applyCharacterData(data) {
+        const fields = data.fields || data;
+
+        Object.entries(fields).forEach(([id, fieldValue]) => {
+            const control = document.getElementById(id);
+            if (!control) return;
+
+            control.value = fieldValue ?? "";
+        });
+
+        const toggles = data.toggles || {};
+        setCheckedValues(".quality-toggle", toggles.quality || data.qualityToggles || []);
+        setCheckedValues(".rule-toggle", toggles.rules || data.ruleToggles || []);
+
+        updatePrompt();
+        setJsonStatus("Character JSON loaded!");
+    }
+
+    async function loadCharacterJson(file) {
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            applyCharacterData(data);
+        } catch (error) {
+            console.error("Could not load character JSON:", error);
+            setJsonStatus("Could not load JSON.");
+        } finally {
+            characterJsonInput.value = "";
+        }
+    }
+
+    copyButton.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(currentPromptText);
+            copyButton.textContent = "Copied!";
+            setTimeout(() => copyButton.textContent = "Copy Prompt Text", 1200);
+        } catch (error) {
+            console.error("Could not copy prompt:", error);
+            copyButton.textContent = "Copy Failed";
+            setTimeout(() => copyButton.textContent = "Copy Prompt Text", 1200);
+        }
+    });
+
+    saveJsonButton.addEventListener("click", downloadCharacterJson);
+
+    loadJsonButton.addEventListener("click", () => {
+        characterJsonInput.click();
+    });
+
+    characterJsonInput.addEventListener("change", event => {
+        loadCharacterJson(event.target.files[0]);
+    });
+
+    document.querySelectorAll(".prompt-control").forEach(control => {
+        control.addEventListener("input", updatePrompt);
+        control.addEventListener("change", updatePrompt);
+    });
+
+    updatePrompt();
+</script>
+
+</html>
