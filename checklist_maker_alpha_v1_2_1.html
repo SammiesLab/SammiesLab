@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checklist Maker — Alpha v1.2.1</title>
+<style>
+  :root {
+    /* Sammie's Lab / Notebook-inspired application theme */
+    --app-bg: #181818;
+    --panel-bg: #1f1f1f;
+    --panel-bg-2: #202020;
+    --control-bg: #20252b;
+    --control-bg-hover: #282d34;
+    --panel-border: #393939;
+    --control-border: #495057;
+
+    --text: #cccccc;
+    --text-bright: #e5e5e5;
+    --control-text: #d4dde3;
+    --muted: #7f8b92;
+
+    --accent: #b8a1ff;
+    --accent-soft: #c7b6ff;
+    --accent-muted: #a996e8;
+    --accent-border: #6f6396;
+    --accent-border-hover: #9f8fe0;
+
+    --glow-primary-soft: rgba(184, 161, 255, 0.15);
+    --glow-primary: rgba(184, 161, 255, 0.20);
+    --glow-primary-strong: rgba(184, 161, 255, 0.24);
+
+    --danger: #d66e7a;
+    --danger-border: #74414a;
+
+    --radius-sm: 10px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+
+    /* Printable page theme — intentionally independent of app UI */
+    --page-bg: #ffffff;
+    --page-text: #20242a;
+    --section-fill: #eee9f1;
+    --section-text: #6f5f7a;
+    --rule-color: #70647b;
+    --card-border: #d9dde2;
+    --row-divider: #e8eaed;
+    --page-margin: 0.38in;
+    --column-gap: 0.18in;
+    --section-gap: 0.16in;
+    --card-radius: 12px;
+    --row-height: 0.30in;
+    --item-font-size: 12px;
+    --section-font-size: 12px;
+    --title-font-size: 28px;
+    --title-font-weight: 800;
+    --title-align: center;
+    --rule-thickness: 3px;
+    --check-size: 15px;
+    --check-stroke: 1.7px;
+    --preview-scale: 1;
+    --page-width: 8.5in;
+    --page-height: 11in;
+  }
+
+  * { box-sizing: border-box; }
+
+  ::selection {
+    background: rgba(184, 161, 255, 0.28);
+    color: #ffffff;
+  }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--app-bg);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow: hidden;
+    scrollbar-color: #766a9c #202020;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-track { background: #202020; }
+  *::-webkit-scrollbar-thumb {
+    background: #6f6396;
+    border: 2px solid #202020;
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-thumb:hover { background: #8e7fc2; }
+
+  button, input, select, textarea { font: inherit; }
+
+  button {
+    border: 1px solid var(--accent-border);
+    background: linear-gradient(180deg, #282d34 0%, #1c2025 100%);
+    color: var(--control-text);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(255,255,255,.035) inset;
+    transition:
+      transform .10s ease,
+      background .12s ease,
+      border-color .12s ease,
+      color .12s ease,
+      box-shadow .12s ease;
+  }
+
+  button:hover {
+    background:
+      linear-gradient(180deg,
+        rgba(92, 79, 126, 0.98) 0%,
+        rgba(54, 46, 74, 0.98) 100%);
+    border-color: var(--accent);
+    color: #f7f3ff;
+    box-shadow:
+      0 0 0 1px rgba(184,161,255,.12),
+      0 0 16px var(--glow-primary);
+  }
+
+  button:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px #181818, 0 0 0 4px var(--glow-primary-strong);
+  }
+
+  button:active { transform: translateY(1px); }
+
+  button.primary {
+    color: #f2edff;
+    border-color: #8b78c7;
+    background:
+      linear-gradient(180deg, rgba(90,78,126,1) 0%, rgba(57,49,80,1) 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.06) inset,
+      0 0 13px rgba(184,161,255,.07);
+  }
+
+  button.primary:hover {
+    border-color: var(--accent);
+    background:
+      linear-gradient(180deg, rgba(104,89,145,1) 0%, rgba(67,57,94,1) 100%);
+  }
+
+  button.danger {
+    color: #ffcbd2;
+    border-color: var(--danger-border);
+  }
+
+  button.danger:hover {
+    border-color: #9f5661;
+    color: #ffe3e7;
+    box-shadow: 0 0 12px rgba(214,110,122,.12);
+  }
+
+  button.icon { padding: 7px 9px; min-width: 34px; }
+  button.ghost {
+    background: #1d2024;
+    border-color: #41464d;
+    box-shadow: none;
+  }
+  button.ghost:hover {
+    border-color: var(--accent-border-hover);
+    background: rgba(92, 79, 126, 0.34);
+    color: #efe9ff;
+    box-shadow: 0 0 12px rgba(184,161,255,.10);
+  }
+  button.small { padding: 6px 9px; font-size: 12px; }
+
+  .app {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    background: var(--app-bg);
+  }
+
+  .topbar {
+    min-height: 52px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--panel-border);
+    background: #1b1b1b;
+    box-shadow: 0 7px 24px rgba(0,0,0,.18);
+    position: relative;
+    z-index: 20;
+  }
+
+  .topbar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(184,161,255,.34), transparent);
+    pointer-events: none;
+  }
+
+  .brand {
+    font-weight: 780;
+    letter-spacing: .018em;
+    margin-right: auto;
+    white-space: nowrap;
+    color: var(--accent);
+    text-shadow: 0 0 13px rgba(184,161,255,.12);
+  }
+
+  .brand span {
+    color: #8f819e;
+    font-weight: 650;
+    text-shadow: none;
+    margin-left: 4px;
+  }
+
+  .topbar-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .layout {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 390px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    min-height: 0;
+    overflow: auto;
+    background: #1f1f1f;
+    border-right: 1px solid var(--panel-border);
+    padding: 13px 12px 28px;
+  }
+
+  .panel {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    margin: 0 0 10px;
+    overflow: visible;
+  }
+
+  .panel > summary {
+    list-style: none;
+    cursor: pointer;
+    min-height: 42px;
+    padding: 10px 12px;
+    font-weight: 760;
+    font-size: 13px;
+    letter-spacing: .015em;
+    color: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    user-select: none;
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, #282d34 0%, #1c2025 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.03) inset,
+      0 6px 16px rgba(0,0,0,.12);
+    text-shadow: 0 0 10px rgba(184,161,255,.10);
+    transition: border-color .12s ease, background .12s ease, box-shadow .12s ease;
+  }
+
+  .panel > summary:hover {
+    border-color: var(--accent);
+    background:
+      linear-gradient(180deg,
+        rgba(87, 75, 119, 0.92) 0%,
+        rgba(48, 41, 66, 0.96) 100%);
+    color: #f2edff;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.05) inset,
+      0 0 0 1px rgba(184,161,255,.10),
+      0 0 16px rgba(184,161,255,.15);
+  }
+
+  .panel > summary::-webkit-details-marker { display: none; }
+
+  .panel > summary::after {
+    content: "▾";
+    color: var(--accent-muted);
+    font-size: 12px;
+    transform: translateY(-1px);
+  }
+
+  .panel:not([open]) > summary::after { content: "▸"; }
+
+  .panel-body {
+    margin: 6px 2px 0;
+    padding: 2px 11px 13px;
+    border: 1px solid #343434;
+    border-top-color: #2c2c2c;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    background: #1d1d1d;
+    box-shadow: 0 12px 25px rgba(0,0,0,.10) inset;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .field label,
+  .field .label {
+    color: #b9c1c7;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 720;
+    letter-spacing: .025em;
+  }
+
+  .field small { color: var(--muted); line-height: 1.35; }
+
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--control-bg);
+    border: 1px solid var(--control-border);
+    color: var(--control-text);
+    border-radius: var(--radius-sm);
+    padding: 9px 10px;
+    outline: none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.025) inset;
+    transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+
+  input[type="text"]:hover,
+  input[type="number"]:hover,
+  select:hover,
+  textarea:hover {
+    border-color: #74669e;
+    background: #24212a;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--accent-border-hover);
+    box-shadow: 0 0 0 3px var(--glow-primary-soft);
+  }
+
+  input[type="color"] {
+    width: 100%;
+    height: 39px;
+    padding: 4px;
+    background: var(--control-bg);
+    border: 1px solid var(--control-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  input[type="color"]:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(184,161,255,.10);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  input[type="checkbox"] { accent-color: var(--accent); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+  .segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .segmented button {
+    padding: 8px;
+    font-size: 12px;
+    border-color: #4c5058;
+  }
+
+  .segmented button.active {
+    color: #f2edff;
+    border-color: var(--accent);
+    background: linear-gradient(180deg, #54486f 0%, #39314d 100%);
+    box-shadow: 0 0 0 1px rgba(184,161,255,.07), 0 0 12px rgba(184,161,255,.10);
+  }
+
+  .section-list {
+    display: grid;
+    gap: 9px;
+    margin-top: 12px;
+  }
+
+  .section-editor {
+    border: 1px solid #3b3b3b;
+    border-radius: var(--radius-md);
+    background: #202020;
+    overflow: hidden;
+    box-shadow: 0 7px 18px rgba(0,0,0,.10);
+  }
+
+  .section-editor:focus-within {
+    border-color: #5e5578;
+    box-shadow: 0 0 0 1px rgba(184,161,255,.04), 0 7px 18px rgba(0,0,0,.12);
+  }
+
+  .section-editor-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px;
+    background: #242424;
+    border-bottom: 1px solid #363636;
+  }
+
+  .section-editor-header input {
+    min-width: 0;
+    padding: 7px 8px;
+    font-weight: 760;
+    color: #ddd7ec;
+    border-color: #494750;
+  }
+
+  .drag-handle {
+    color: #7e738f;
+    cursor: grab;
+    user-select: none;
+    font-weight: 800;
+  }
+
+  .drag-handle:hover { color: var(--accent-muted); }
+
+  .items-editor {
+    display: grid;
+    gap: 7px;
+    padding: 9px;
+    background: #1e1e1e;
+  }
+
+  .item-editor {
+    display: grid;
+    grid-template-columns: 28px minmax(0,1fr) 96px 40px;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .item-editor input,
+  .item-editor select {
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  .item-editor .quantity-input { display: none; }
+  .item-editor.quantity .quantity-input { display: block; }
+  .item-editor.quantity .type-select { display: none; }
+
+  .item-editor-controls {
+    grid-column: 2 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: -2px;
+  }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 9px 9px;
+    background: #1e1e1e;
+  }
+
+  .add-row button { flex: 1; }
+
+  .workspace {
+    min-width: 0;
+    min-height: 0;
+    background:
+      radial-gradient(circle at 23% 13%, rgba(184,161,255,.055), transparent 27%),
+      radial-gradient(circle at 77% 85%, rgba(184,161,255,.025), transparent 31%),
+      #171717;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .workspace-toolbar {
+    height: 46px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    border-bottom: 1px solid #333333;
+    background: #1d1d1d;
+    position: relative;
+    z-index: 5;
+    box-shadow: 0 5px 14px rgba(0,0,0,.12);
+  }
+
+  .workspace-toolbar::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(184,161,255,.13), transparent);
+  }
+
+  .workspace-toolbar label {
+    color: #9aa5ab;
+    font-size: 11px;
+    font-weight: 720;
+    letter-spacing: .02em;
+  }
+
+  .workspace-toolbar input[type="range"] { width: 140px; }
+  .zoom-readout {
+    min-width: 44px;
+    color: #c8c1d7;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stage {
+    position: absolute;
+    inset: 46px 0 0;
+    overflow: auto;
+    padding: 30px;
+  }
+
+  .page-shell {
+    width: calc(var(--page-width) * var(--preview-scale));
+    height: calc(var(--page-height) * var(--preview-scale));
+    margin: 0 auto 42px;
+    position: relative;
+  }
+
+  .page {
+    width: var(--page-width);
+    height: var(--page-height);
+    transform-origin: top left;
+    transform: scale(var(--preview-scale));
+    background: var(--page-bg);
+    color: var(--page-text);
+    box-shadow:
+      0 22px 48px rgba(0,0,0,.42),
+      0 0 0 1px rgba(255,255,255,.055);
+    overflow: hidden;
+    position: absolute;
+    inset: 0 auto auto 0;
+  }
+
+  .page-inner {
+    height: 100%;
+    padding: var(--page-margin);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .doc-header {
+    flex: 0 0 auto;
+    margin-bottom: 0.20in;
+  }
+
+  .doc-title {
+    margin: 0;
+    font-family: var(--title-font, Arial, sans-serif);
+    font-size: var(--title-font-size);
+    font-weight: var(--title-font-weight);
+    text-align: var(--title-align);
+    line-height: 1.05;
+    color: var(--page-text);
+    overflow-wrap: anywhere;
+  }
+
+  .title-rule {
+    margin-top: 0.14in;
+    height: var(--rule-thickness);
+    background: var(--rule-color);
+    border-radius: 999px;
+  }
+
+  .preview-columns {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--preview-columns, 2), minmax(0, 1fr));
+    gap: var(--column-gap);
+    align-content: start;
+  }
+
+  .preview-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+    min-width: 0;
+  }
+
+  .preview-section {
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    break-inside: avoid;
+    background: rgba(250,250,250,.76);
+  }
+
+  .preview-section-title {
+    min-height: 0.32in;
+    display: flex;
+    align-items: center;
+    padding: 0.06in 0.13in;
+    background: var(--section-fill);
+    color: var(--section-text);
+    font-weight: 800;
+    font-size: var(--section-font-size);
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .preview-item {
+    min-height: var(--row-height);
+    display: flex;
+    align-items: center;
+    gap: 0.09in;
+    padding: 0.045in 0.12in;
+    font-size: var(--item-font-size);
+    line-height: 1.15;
+    border-top: 1px solid var(--row-divider);
+  }
+
+  .preview-section .preview-item:first-of-type { border-top: 0; }
+
+  .item-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .square-check {
+    flex: 0 0 auto;
+    width: var(--check-size);
+    height: var(--check-size);
+    border: var(--check-stroke) solid currentColor;
+    border-radius: 2px;
+  }
+
+  .quantity-circles {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 58%;
+  }
+
+  .quantity-circle {
+    flex: 0 0 auto;
+    width: var(--check-size);
+    height: var(--check-size);
+    border: var(--check-stroke) solid currentColor;
+    border-radius: 50%;
+  }
+
+  .overflow-badge {
+    position: sticky;
+    left: 16px;
+    bottom: 16px;
+    width: fit-content;
+    margin-top: 16px;
+    padding: 8px 11px;
+    border-radius: var(--radius-sm);
+    background: #342125;
+    border: 1px solid #74414a;
+    color: #efbcc3;
+    font-size: 12px;
+    font-weight: 760;
+    display: none;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+
+  .overflow-badge.show { display: block; }
+
+  .empty-state {
+    padding: 20px 12px;
+    text-align: center;
+    color: #737a84;
+    font-style: italic;
+    font-size: 13px;
+    border: 1px dashed #d7dbe0;
+    border-radius: 10px;
+  }
+
+  .status {
+    margin-left: auto;
+    color: #837992;
+    font-size: 11px;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
+
+  .file-input { display: none; }
+
+  .hint {
+    color: #879198;
+    font-size: 11px;
+    line-height: 1.48;
+    padding: 10px 11px;
+    background: #1a1a1a;
+    border-radius: var(--radius-sm);
+    border: 1px solid #343434;
+    border-left: 2px solid #655a87;
+    margin-top: 12px;
+  }
+
+  .hint strong { color: #b9aed1; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 12px;
+    color: #b9c1c7;
+    font-size: 11px;
+    line-height: 1.35;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .toggle-row input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
+    accent-color: var(--accent);
+  }
+
+  .print-root { display: none; }
+
+  @media (max-width: 950px) {
+    .layout { grid-template-columns: 335px minmax(0, 1fr); }
+    .sidebar { padding: 10px 9px 24px; }
+  }
+
+  @media (max-width: 760px) {
+    body { overflow: auto; }
+    .app { height: auto; min-height: 100vh; }
+    .topbar { align-items: flex-start; }
+    .topbar-group { justify-content: flex-end; }
+    .layout { grid-template-columns: 1fr; }
+    .sidebar {
+      max-height: none;
+      border-right: 0;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .workspace { min-height: 75vh; }
+    .stage { position: relative; inset: auto; height: calc(75vh - 46px); }
+    .item-editor { grid-template-columns: 28px minmax(0,1fr) 90px 40px; }
+  }
+
+  @media print {
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #fff !important;
+      overflow: visible !important;
+    }
+
+    .app { display: none !important; }
+    .print-root { display: block !important; }
+
+    .print-root > .page {
+      position: relative !important;
+      inset: auto !important;
+      display: block !important;
+      transform: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      width: var(--page-width) !important;
+      height: var(--page-height) !important;
+      overflow: hidden !important;
+      break-after: page;
+      page-break-after: always;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .print-root > .page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    body.no-print-backgrounds .print-root > .page,
+    body.no-print-backgrounds .print-root .preview-section,
+    body.no-print-backgrounds .print-root .preview-section-title {
+      background: #fff !important;
+    }
+  }
+</style>
+<style id="dynamicPrintStyle">
+  @page { size: letter portrait; margin: 0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">Checklist Maker <span>α v1.2.1</span></div>
+    <div class="topbar-group">
+      <button id="newBtn">New</button>
+      <button id="loadBtn">Load JSON</button>
+      <button id="saveBtn">Save JSON</button>
+      <button id="printBtn" class="primary">Print Page</button>
+      <input id="fileInput" class="file-input" type="file" accept=".json,application/json" />
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <details class="panel" open>
+        <summary>Document &amp; Content</summary>
+        <div class="panel-body">
+          <div class="field">
+            <label for="titleInput">List title</label>
+            <input id="titleInput" type="text" placeholder="Checklist title" />
+          </div>
+
+          <div class="section-list" id="sectionList"></div>
+
+          <div class="field">
+            <button id="addSectionBtn" class="primary">+ Add Section</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>Page & Layout</summary>
+        <div class="panel-body">
+          <div class="field">
+            <span class="label">Orientation</span>
+            <div class="segmented" id="orientationButtons">
+              <button type="button" data-orientation="portrait">Portrait</button>
+              <button type="button" data-orientation="landscape">Landscape</button>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="columnsInput">Columns</label>
+              <select id="columnsInput">
+                <option value="1">1 column</option>
+                <option value="2">2 columns</option>
+                <option value="3">3 columns</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="marginInput">Page margin (in)</label>
+              <input id="marginInput" type="number" min="0.15" max="1.25" step="0.05" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="columnGapInput">Column gap (in)</label>
+              <input id="columnGapInput" type="number" min="0" max="0.75" step="0.02" />
+            </div>
+            <div class="field">
+              <label for="sectionGapInput">Section gap (in)</label>
+              <input id="sectionGapInput" type="number" min="0" max="0.75" step="0.02" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="distributionInput">Section distribution</label>
+            <select id="distributionInput">
+              <option value="balanced">Balanced by item count</option>
+              <option value="roundrobin">Round-robin</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>Print &amp; Rendering</summary>
+        <div class="panel-body">
+          <div class="grid2">
+            <div class="field">
+              <label for="printCopiesInput">Rendered print pages</label>
+              <input id="printCopiesInput" type="number" min="1" max="12" step="1" />
+            </div>
+            <div class="field">
+              <span class="label">Quick render</span>
+              <button id="refreshRenderBtn">Refresh Render</button>
+            </div>
+          </div>
+
+          <label class="toggle-row">
+            <input id="printBackgroundsInput" type="checkbox" />
+            Print section fills and page colors
+          </label>
+
+          <label class="toggle-row">
+            <input id="enterRefreshInput" type="checkbox" />
+            Press Enter in an editor field to refresh the rendered page
+          </label>
+
+          <div class="hint">
+            The browser print dialog should now contain exactly the number of rendered pages above. Default is one page.
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Title Styling</summary>
+        <div class="panel-body">
+          <div class="field">
+            <label for="titleFontInput">Font</label>
+            <select id="titleFontInput">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Arial Narrow, Arial, sans-serif">Arial Narrow</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="Courier New, monospace">Courier New</option>
+            </select>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="titleSizeInput">Size (px)</label>
+              <input id="titleSizeInput" type="number" min="16" max="54" step="1" />
+            </div>
+            <div class="field">
+              <label for="titleWeightInput">Weight</label>
+              <select id="titleWeightInput">
+                <option value="600">Semibold</option>
+                <option value="700">Bold</option>
+                <option value="800">Extra bold</option>
+                <option value="900">Black</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="titleAlignInput">Alignment</label>
+            <select id="titleAlignInput">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="textColorInput">Title / text</label>
+              <input id="textColorInput" type="color" />
+            </div>
+            <div class="field">
+              <label for="ruleColorInput">Rule color</label>
+              <input id="ruleColorInput" type="color" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="ruleThicknessInput">Rule thickness (px)</label>
+            <input id="ruleThicknessInput" type="number" min="0" max="10" step="1" />
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Section Styling</summary>
+        <div class="panel-body">
+          <div class="grid2">
+            <div class="field">
+              <label for="sectionFillInput">Header fill</label>
+              <input id="sectionFillInput" type="color" />
+            </div>
+            <div class="field">
+              <label for="sectionTextInput">Header text</label>
+              <input id="sectionTextInput" type="color" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="cardBorderInput">Card border</label>
+              <input id="cardBorderInput" type="color" />
+            </div>
+            <div class="field">
+              <label for="rowDividerInput">Row divider</label>
+              <input id="rowDividerInput" type="color" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="radiusInput">Corner radius (px)</label>
+              <input id="radiusInput" type="number" min="0" max="30" step="1" />
+            </div>
+            <div class="field">
+              <label for="sectionFontSizeInput">Header size (px)</label>
+              <input id="sectionFontSizeInput" type="number" min="8" max="22" step="1" />
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Item Styling</summary>
+        <div class="panel-body">
+          <div class="grid2">
+            <div class="field">
+              <label for="itemFontSizeInput">Item size (px)</label>
+              <input id="itemFontSizeInput" type="number" min="8" max="22" step="1" />
+            </div>
+            <div class="field">
+              <label for="rowHeightInput">Row height (in)</label>
+              <input id="rowHeightInput" type="number" min="0.20" max="0.60" step="0.01" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="checkSizeInput">Box / circle size (px)</label>
+              <input id="checkSizeInput" type="number" min="8" max="28" step="1" />
+            </div>
+            <div class="field">
+              <label for="checkStrokeInput">Stroke (px)</label>
+              <input id="checkStrokeInput" type="number" min="1" max="4" step="0.1" />
+            </div>
+          </div>
+
+          <div class="hint">
+            Checkbox items render a square on the <strong>left</strong>. Quantity items render the chosen number of circles on the <strong>right</strong>.
+          </div>
+        </div>
+      </details>
+
+      <details class="panel">
+        <summary>Presets</summary>
+        <div class="panel-body">
+          <div class="field">
+            <select id="presetInput">
+              <option value="amenities">Amenities-inspired</option>
+              <option value="minimal">Minimal Ink</option>
+              <option value="lavender">Soft Lavender</option>
+              <option value="charcoal">Charcoal Print</option>
+            </select>
+          </div>
+          <div class="field">
+            <button id="applyPresetBtn">Apply Preset</button>
+          </div>
+        </div>
+      </details>
+    </aside>
+
+    <main class="workspace">
+      <div class="workspace-toolbar">
+        <label for="zoomInput">Preview zoom</label>
+        <input id="zoomInput" type="range" min="30" max="110" step="1" value="72" />
+        <div class="zoom-readout" id="zoomReadout">72%</div>
+        <button class="small" id="fitBtn">Fit</button>
+        <div class="status" id="statusText">Ready</div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="page-shell" id="pageShell">
+          <article class="page" id="pagePreview">
+            <div class="page-inner" id="pageInner">
+              <header class="doc-header">
+                <h1 class="doc-title" id="previewTitle"></h1>
+                <div class="title-rule" id="titleRule"></div>
+              </header>
+              <div class="preview-columns" id="previewColumns"></div>
+            </div>
+          </article>
+        </div>
+        <div class="overflow-badge" id="overflowBadge">⚠ Content is overflowing the printable page.</div>
+      </div>
+    </main>
+  </div>
+</div>
+<div class="print-root" id="printRoot" aria-hidden="true"></div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'checklist-maker-alpha-v1-2-1';
+  let uidCounter = 1;
+
+  const defaultState = () => ({
+    version: 1,
+    document: {
+      title: 'Checklist',
+      orientation: 'portrait',
+      columns: 1,
+      distribution: 'balanced',
+      sections: [
+        {
+          id: uid(),
+          title: 'List',
+          items: [
+            { id: uid(), text: 'Checkbox 1', type: 'checkbox', quantity: 1 },
+            { id: uid(), text: 'Checkbox 2', type: 'checkbox', quantity: 1 },
+            { id: uid(), text: 'Quantity 1', type: 'quantity', quantity: 1 },
+            { id: uid(), text: 'Quantity 2', type: 'quantity', quantity: 2 }
+          ]
+        }
+      ]
+    },
+    rendering: {
+      printCopies: 1,
+      printBackgrounds: true,
+      enterRefresh: true
+    },
+    styling: {
+      pageMargin: 0.38,
+      columnGap: 0.18,
+      sectionGap: 0.16,
+      pageBackground: '#ffffff',
+      textColor: '#20242a',
+      titleFont: 'Arial Narrow, Arial, sans-serif',
+      titleSize: 28,
+      titleWeight: 800,
+      titleAlign: 'center',
+      ruleColor: '#70647b',
+      ruleThickness: 3,
+      sectionFill: '#eee9f1',
+      sectionText: '#6f5f7a',
+      cardBorder: '#d9dde2',
+      rowDivider: '#e8eaed',
+      cardRadius: 12,
+      sectionFontSize: 12,
+      itemFontSize: 12,
+      rowHeight: 0.30,
+      checkSize: 15,
+      checkStroke: 1.7
+    }
+  });
+
+  const presets = {
+    amenities: {
+      pageBackground: '#ffffff',
+      textColor: '#20242a',
+      titleFont: 'Arial Narrow, Arial, sans-serif',
+      titleSize: 28,
+      titleWeight: 800,
+      titleAlign: 'center',
+      ruleColor: '#70647b',
+      ruleThickness: 3,
+      sectionFill: '#eee9f1',
+      sectionText: '#6f5f7a',
+      cardBorder: '#d9dde2',
+      rowDivider: '#e8eaed',
+      cardRadius: 12,
+      sectionFontSize: 12,
+      itemFontSize: 12,
+      rowHeight: 0.30,
+      checkSize: 15,
+      checkStroke: 1.7
+    },
+    minimal: {
+      pageBackground: '#ffffff',
+      textColor: '#171717',
+      titleFont: 'Arial, sans-serif',
+      titleSize: 26,
+      titleWeight: 700,
+      titleAlign: 'left',
+      ruleColor: '#171717',
+      ruleThickness: 2,
+      sectionFill: '#ffffff',
+      sectionText: '#171717',
+      cardBorder: '#b8b8b8',
+      rowDivider: '#dedede',
+      cardRadius: 4,
+      sectionFontSize: 11,
+      itemFontSize: 11,
+      rowHeight: 0.28,
+      checkSize: 14,
+      checkStroke: 1.4
+    },
+    lavender: {
+      pageBackground: '#fffefe',
+      textColor: '#29222e',
+      titleFont: 'Trebuchet MS, sans-serif',
+      titleSize: 30,
+      titleWeight: 800,
+      titleAlign: 'center',
+      ruleColor: '#8e6da8',
+      ruleThickness: 3,
+      sectionFill: '#eee5f4',
+      sectionText: '#674d7a',
+      cardBorder: '#dacfe3',
+      rowDivider: '#eee7f2',
+      cardRadius: 14,
+      sectionFontSize: 12,
+      itemFontSize: 12,
+      rowHeight: 0.31,
+      checkSize: 15,
+      checkStroke: 1.7
+    },
+    charcoal: {
+      pageBackground: '#ffffff',
+      textColor: '#222428',
+      titleFont: 'Verdana, sans-serif',
+      titleSize: 25,
+      titleWeight: 800,
+      titleAlign: 'center',
+      ruleColor: '#36383d',
+      ruleThickness: 4,
+      sectionFill: '#35383d',
+      sectionText: '#ffffff',
+      cardBorder: '#cfd2d6',
+      rowDivider: '#e2e4e7',
+      cardRadius: 8,
+      sectionFontSize: 11,
+      itemFontSize: 11,
+      rowHeight: 0.29,
+      checkSize: 14,
+      checkStroke: 1.8
+    }
+  };
+
+  let state = loadAutosave() || defaultState();
+
+  const $ = (id) => document.getElementById(id);
+  const refs = {
+    titleInput: $('titleInput'),
+    sectionList: $('sectionList'),
+    addSectionBtn: $('addSectionBtn'),
+    orientationButtons: $('orientationButtons'),
+    columnsInput: $('columnsInput'),
+    marginInput: $('marginInput'),
+    columnGapInput: $('columnGapInput'),
+    sectionGapInput: $('sectionGapInput'),
+    distributionInput: $('distributionInput'),
+    titleFontInput: $('titleFontInput'),
+    titleSizeInput: $('titleSizeInput'),
+    titleWeightInput: $('titleWeightInput'),
+    titleAlignInput: $('titleAlignInput'),
+    textColorInput: $('textColorInput'),
+    ruleColorInput: $('ruleColorInput'),
+    ruleThicknessInput: $('ruleThicknessInput'),
+    sectionFillInput: $('sectionFillInput'),
+    sectionTextInput: $('sectionTextInput'),
+    cardBorderInput: $('cardBorderInput'),
+    rowDividerInput: $('rowDividerInput'),
+    radiusInput: $('radiusInput'),
+    sectionFontSizeInput: $('sectionFontSizeInput'),
+    itemFontSizeInput: $('itemFontSizeInput'),
+    rowHeightInput: $('rowHeightInput'),
+    checkSizeInput: $('checkSizeInput'),
+    checkStrokeInput: $('checkStrokeInput'),
+    presetInput: $('presetInput'),
+    applyPresetBtn: $('applyPresetBtn'),
+    previewTitle: $('previewTitle'),
+    titleRule: $('titleRule'),
+    previewColumns: $('previewColumns'),
+    pagePreview: $('pagePreview'),
+    pageInner: $('pageInner'),
+    pageShell: $('pageShell'),
+    overflowBadge: $('overflowBadge'),
+    stage: $('stage'),
+    zoomInput: $('zoomInput'),
+    zoomReadout: $('zoomReadout'),
+    fitBtn: $('fitBtn'),
+    statusText: $('statusText'),
+    newBtn: $('newBtn'),
+    loadBtn: $('loadBtn'),
+    saveBtn: $('saveBtn'),
+    printBtn: $('printBtn'),
+    fileInput: $('fileInput'),
+    printRoot: $('printRoot'),
+    printCopiesInput: $('printCopiesInput'),
+    printBackgroundsInput: $('printBackgroundsInput'),
+    enterRefreshInput: $('enterRefreshInput'),
+    refreshRenderBtn: $('refreshRenderBtn')
+  };
+
+  function uid() {
+    return 'id-' + Date.now().toString(36) + '-' + (uidCounter++);
+  }
+
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function sanitizeState(raw) {
+    const base = defaultState();
+    if (!raw || typeof raw !== 'object') return base;
+
+    const next = {
+      version: 1,
+      document: {
+        title: String(raw.document?.title ?? base.document.title),
+        orientation: ['portrait','landscape'].includes(raw.document?.orientation) ? raw.document.orientation : 'portrait',
+        columns: clampInt(raw.document?.columns, 1, 3, 2),
+        distribution: ['balanced','roundrobin'].includes(raw.document?.distribution) ? raw.document.distribution : 'balanced',
+        sections: Array.isArray(raw.document?.sections) ? raw.document.sections.map(sec => ({
+          id: String(sec.id || uid()),
+          title: String(sec.title ?? 'Untitled Section'),
+          items: Array.isArray(sec.items) ? sec.items.map(item => ({
+            id: String(item.id || uid()),
+            text: String(item.text ?? ''),
+            type: item.type === 'quantity' ? 'quantity' : 'checkbox',
+            quantity: clampInt(item.quantity, 1, 24, 1)
+          })) : []
+        })) : []
+      },
+      rendering: {
+        printCopies: clampInt(raw.rendering?.printCopies, 1, 12, base.rendering.printCopies),
+        printBackgrounds: raw.rendering?.printBackgrounds !== false,
+        enterRefresh: raw.rendering?.enterRefresh !== false
+      },
+      styling: { ...base.styling, ...(raw.styling || {}) }
+    };
+
+    return next;
+  }
+
+  function clampInt(value, min, max, fallback) {
+    const n = parseInt(value, 10);
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+  }
+
+  function clampFloat(value, min, max, fallback) {
+    const n = parseFloat(value);
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+  }
+
+  function esc(str) {
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+
+  function loadAutosave() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? sanitizeState(JSON.parse(raw)) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function autosave() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  }
+
+  function setStatus(text) {
+    refs.statusText.textContent = text;
+    clearTimeout(setStatus.t);
+    setStatus.t = setTimeout(() => refs.statusText.textContent = 'Ready', 1800);
+  }
+
+  function renderAll() {
+    syncControls();
+    renderEditor();
+    renderPreview();
+    buildPrintRoot();
+    autosave();
+  }
+
+  function syncControls() {
+    const s = state.styling;
+    refs.titleInput.value = state.document.title;
+    refs.columnsInput.value = state.document.columns;
+    refs.marginInput.value = s.pageMargin;
+    refs.columnGapInput.value = s.columnGap;
+    refs.sectionGapInput.value = s.sectionGap;
+    refs.distributionInput.value = state.document.distribution;
+    refs.titleFontInput.value = s.titleFont;
+    refs.titleSizeInput.value = s.titleSize;
+    refs.titleWeightInput.value = String(s.titleWeight);
+    refs.titleAlignInput.value = s.titleAlign;
+    refs.textColorInput.value = s.textColor;
+    refs.ruleColorInput.value = s.ruleColor;
+    refs.ruleThicknessInput.value = s.ruleThickness;
+    refs.sectionFillInput.value = s.sectionFill;
+    refs.sectionTextInput.value = s.sectionText;
+    refs.cardBorderInput.value = s.cardBorder;
+    refs.rowDividerInput.value = s.rowDivider;
+    refs.radiusInput.value = s.cardRadius;
+    refs.sectionFontSizeInput.value = s.sectionFontSize;
+    refs.itemFontSizeInput.value = s.itemFontSize;
+    refs.rowHeightInput.value = s.rowHeight;
+    refs.checkSizeInput.value = s.checkSize;
+    refs.checkStrokeInput.value = s.checkStroke;
+    refs.printCopiesInput.value = state.rendering.printCopies;
+    refs.printBackgroundsInput.checked = state.rendering.printBackgrounds;
+    refs.enterRefreshInput.checked = state.rendering.enterRefresh;
+
+    [...refs.orientationButtons.querySelectorAll('button')].forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.orientation === state.document.orientation);
+    });
+  }
+
+  function renderEditor() {
+    refs.sectionList.innerHTML = '';
+
+    state.document.sections.forEach((section, sIndex) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'section-editor';
+      wrap.draggable = true;
+      wrap.dataset.sectionId = section.id;
+
+      wrap.innerHTML = `
+        <div class="section-editor-header">
+          <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+          <input type="text" value="${esc(section.title)}" aria-label="Section title">
+          <button class="icon ghost move-up" title="Move section up">↑</button>
+          <button class="icon ghost move-down" title="Move section down">↓</button>
+          <button class="icon danger ghost delete-section" title="Delete section">×</button>
+        </div>
+        <div class="items-editor"></div>
+        <div class="add-row">
+          <button class="small add-checkbox">+ Checkbox Item</button>
+          <button class="small add-quantity">+ Quantity Item</button>
+        </div>
+      `;
+
+      const titleInput = wrap.querySelector('.section-editor-header input');
+      titleInput.addEventListener('input', e => {
+        section.title = e.target.value;
+        renderPreview();
+        autosave();
+      });
+
+      wrap.querySelector('.delete-section').addEventListener('click', () => {
+        if (!confirm(`Delete section "${section.title || 'Untitled Section'}"?`)) return;
+        state.document.sections.splice(sIndex, 1);
+        renderAll();
+      });
+
+      wrap.querySelector('.move-up').addEventListener('click', () => moveSection(sIndex, -1));
+      wrap.querySelector('.move-down').addEventListener('click', () => moveSection(sIndex, 1));
+
+      wrap.querySelector('.add-checkbox').addEventListener('click', () => {
+        section.items.push({ id: uid(), text: 'New checklist item', type: 'checkbox', quantity: 1 });
+        renderAll();
+        requestAnimationFrame(() => focusLastItem(section.id));
+      });
+
+      wrap.querySelector('.add-quantity').addEventListener('click', () => {
+        section.items.push({ id: uid(), text: 'New quantity item', type: 'quantity', quantity: 1 });
+        renderAll();
+        requestAnimationFrame(() => focusLastItem(section.id));
+      });
+
+      const itemsEditor = wrap.querySelector('.items-editor');
+      section.items.forEach((item, iIndex) => {
+        const row = document.createElement('div');
+        row.className = 'item-editor' + (item.type === 'quantity' ? ' quantity' : '');
+        row.dataset.itemId = item.id;
+        row.innerHTML = `
+          <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+          <input class="item-text" type="text" value="${esc(item.text)}" aria-label="Item name">
+          <select class="type-select" aria-label="Item type">
+            <option value="checkbox" ${item.type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
+            <option value="quantity" ${item.type === 'quantity' ? 'selected' : ''}>Quantity</option>
+          </select>
+          <input class="quantity-input" type="number" min="1" max="24" value="${item.quantity || 1}" title="Quantity">
+          <button class="icon danger ghost delete-item" title="Delete item">×</button>
+          <div class="item-editor-controls">
+            <button class="small ghost move-item-up" title="Move item up">↑</button>
+            <button class="small ghost move-item-down" title="Move item down">↓</button>
+            ${item.type === 'quantity' ? '<button class="small ghost convert-item">Make Checkbox</button>' : '<button class="small ghost convert-item">Make Quantity</button>'}
+          </div>
+        `;
+
+        const textInput = row.querySelector('.item-text');
+        textInput.addEventListener('input', e => {
+          item.text = e.target.value;
+          renderPreview();
+          autosave();
+        });
+
+        row.querySelector('.type-select')?.addEventListener('change', e => {
+          item.type = e.target.value;
+          renderAll();
+        });
+
+        row.querySelector('.quantity-input')?.addEventListener('input', e => {
+          item.quantity = clampInt(e.target.value, 1, 24, 1);
+          e.target.value = item.quantity;
+          renderPreview();
+          autosave();
+        });
+
+        row.querySelector('.delete-item').addEventListener('click', () => {
+          section.items.splice(iIndex, 1);
+          renderAll();
+        });
+
+        row.querySelector('.move-item-up').addEventListener('click', () => moveItem(section, iIndex, -1));
+        row.querySelector('.move-item-down').addEventListener('click', () => moveItem(section, iIndex, 1));
+
+        row.querySelector('.convert-item').addEventListener('click', () => {
+          item.type = item.type === 'quantity' ? 'checkbox' : 'quantity';
+          if (!item.quantity) item.quantity = 1;
+          renderAll();
+        });
+
+        textInput.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            section.items.splice(iIndex + 1, 0, {
+              id: uid(),
+              text: '',
+              type: item.type,
+              quantity: item.type === 'quantity' ? item.quantity || 1 : 1
+            });
+            renderAll();
+            requestAnimationFrame(() => {
+              const next = document.querySelector(`[data-item-id="${section.items[iIndex + 1].id}"] .item-text`);
+              next?.focus();
+            });
+          }
+        });
+
+        itemsEditor.appendChild(row);
+      });
+
+      bindSectionDrag(wrap);
+      bindItemDrag(itemsEditor, section);
+      refs.sectionList.appendChild(wrap);
+    });
+  }
+
+  function focusLastItem(sectionId) {
+    const section = state.document.sections.find(s => s.id === sectionId);
+    if (!section?.items.length) return;
+    const id = section.items[section.items.length - 1].id;
+    document.querySelector(`[data-item-id="${id}"] .item-text`)?.select();
+  }
+
+  function moveSection(index, delta) {
+    const target = index + delta;
+    if (target < 0 || target >= state.document.sections.length) return;
+    const [item] = state.document.sections.splice(index, 1);
+    state.document.sections.splice(target, 0, item);
+    renderAll();
+  }
+
+  function moveItem(section, index, delta) {
+    const target = index + delta;
+    if (target < 0 || target >= section.items.length) return;
+    const [item] = section.items.splice(index, 1);
+    section.items.splice(target, 0, item);
+    renderAll();
+  }
+
+  function bindSectionDrag(el) {
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/section-id', el.dataset.sectionId);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    el.addEventListener('dragover', e => {
+      if (!e.dataTransfer.types.includes('text/section-id')) return;
+      e.preventDefault();
+    });
+
+    el.addEventListener('drop', e => {
+      const draggedId = e.dataTransfer.getData('text/section-id');
+      if (!draggedId || draggedId === el.dataset.sectionId) return;
+      e.preventDefault();
+      const from = state.document.sections.findIndex(s => s.id === draggedId);
+      const to = state.document.sections.findIndex(s => s.id === el.dataset.sectionId);
+      if (from < 0 || to < 0) return;
+      const [section] = state.document.sections.splice(from, 1);
+      state.document.sections.splice(to, 0, section);
+      renderAll();
+    });
+  }
+
+  function bindItemDrag(container, section) {
+    container.querySelectorAll('.item-editor').forEach(row => {
+      row.draggable = true;
+
+      row.addEventListener('dragstart', e => {
+        e.stopPropagation();
+        e.dataTransfer.setData('text/item-id', row.dataset.itemId);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      row.addEventListener('dragover', e => {
+        if (!e.dataTransfer.types.includes('text/item-id')) return;
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      row.addEventListener('drop', e => {
+        const draggedId = e.dataTransfer.getData('text/item-id');
+        if (!draggedId || draggedId === row.dataset.itemId) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const from = section.items.findIndex(i => i.id === draggedId);
+        const to = section.items.findIndex(i => i.id === row.dataset.itemId);
+        if (from < 0 || to < 0) return;
+        const [item] = section.items.splice(from, 1);
+        section.items.splice(to, 0, item);
+        renderAll();
+      });
+    });
+  }
+
+  function renderPreview() {
+    applyCssVars();
+    refs.previewTitle.textContent = state.document.title || 'Untitled Checklist';
+    refs.previewColumns.innerHTML = '';
+
+    const columns = Array.from({ length: state.document.columns }, () => []);
+    const sections = state.document.sections;
+
+    if (state.document.distribution === 'roundrobin') {
+      sections.forEach((section, i) => columns[i % columns.length].push(section));
+    } else {
+      const weights = Array(columns.length).fill(0);
+      sections.forEach(section => {
+        const sectionWeight = 1.25 + section.items.length;
+        let target = 0;
+        for (let i = 1; i < weights.length; i++) {
+          if (weights[i] < weights[target]) target = i;
+        }
+        columns[target].push(section);
+        weights[target] += sectionWeight;
+      });
+    }
+
+    columns.forEach(group => {
+      const col = document.createElement('div');
+      col.className = 'preview-column';
+
+      if (!group.length) {
+        col.innerHTML = '<div class="empty-state">Empty column</div>';
+      } else {
+        group.forEach(section => col.appendChild(renderPreviewSection(section)));
+      }
+      refs.previewColumns.appendChild(col);
+    });
+
+    requestAnimationFrame(checkOverflow);
+  }
+
+  function renderPreviewSection(section) {
+    const card = document.createElement('section');
+    card.className = 'preview-section';
+
+    const title = document.createElement('div');
+    title.className = 'preview-section-title';
+    title.textContent = section.title || 'Untitled Section';
+    card.appendChild(title);
+
+    if (!section.items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'preview-item';
+      empty.innerHTML = '<span class="item-name" style="opacity:.5;font-style:italic;">No items</span>';
+      card.appendChild(empty);
+      return card;
+    }
+
+    section.items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'preview-item';
+
+      if (item.type === 'checkbox') {
+        const square = document.createElement('span');
+        square.className = 'square-check';
+        row.appendChild(square);
+
+        const name = document.createElement('span');
+        name.className = 'item-name';
+        name.textContent = item.text || 'Untitled item';
+        row.appendChild(name);
+      } else {
+        const name = document.createElement('span');
+        name.className = 'item-name';
+        name.textContent = item.text || 'Untitled item';
+        row.appendChild(name);
+
+        const circles = document.createElement('span');
+        circles.className = 'quantity-circles';
+        const quantity = clampInt(item.quantity, 1, 24, 1);
+        for (let i = 0; i < quantity; i++) {
+          const c = document.createElement('span');
+          c.className = 'quantity-circle';
+          circles.appendChild(c);
+        }
+        row.appendChild(circles);
+      }
+
+      card.appendChild(row);
+    });
+
+    return card;
+  }
+
+  function applyCssVars() {
+    const root = document.documentElement.style;
+    const s = state.styling;
+
+    const landscape = state.document.orientation === 'landscape';
+    root.setProperty('--page-width', landscape ? '11in' : '8.5in');
+    root.setProperty('--page-height', landscape ? '8.5in' : '11in');
+    root.setProperty('--preview-columns', state.document.columns);
+    root.setProperty('--page-bg', s.pageBackground);
+    root.setProperty('--page-text', s.textColor);
+    root.setProperty('--page-margin', s.pageMargin + 'in');
+    root.setProperty('--column-gap', s.columnGap + 'in');
+    root.setProperty('--section-gap', s.sectionGap + 'in');
+    root.setProperty('--title-font', s.titleFont);
+    root.setProperty('--title-font-size', s.titleSize + 'px');
+    root.setProperty('--title-font-weight', s.titleWeight);
+    root.setProperty('--title-align', s.titleAlign);
+    root.setProperty('--rule-color', s.ruleColor);
+    root.setProperty('--rule-thickness', s.ruleThickness + 'px');
+    root.setProperty('--section-fill', s.sectionFill);
+    root.setProperty('--section-text', s.sectionText);
+    root.setProperty('--card-border', s.cardBorder);
+    root.setProperty('--row-divider', s.rowDivider);
+    root.setProperty('--card-radius', s.cardRadius + 'px');
+    root.setProperty('--section-font-size', s.sectionFontSize + 'px');
+    root.setProperty('--item-font-size', s.itemFontSize + 'px');
+    root.setProperty('--row-height', s.rowHeight + 'in');
+    root.setProperty('--check-size', s.checkSize + 'px');
+    root.setProperty('--check-stroke', s.checkStroke + 'px');
+
+    document.body.classList.toggle('landscape-print', landscape);
+    const printStyle = document.getElementById('dynamicPrintStyle');
+    if (printStyle) {
+      printStyle.textContent = `@page { size: letter ${landscape ? 'landscape' : 'portrait'}; margin: 0; }`;
+    }
+  }
+
+  function checkOverflow() {
+    const tolerance = 2;
+    const inner = refs.pageInner;
+    const overflowing = inner.scrollHeight > inner.clientHeight + tolerance || inner.scrollWidth > inner.clientWidth + tolerance;
+    refs.overflowBadge.classList.toggle('show', overflowing);
+  }
+
+  function bindStyleInput(ref, key, parser = v => v) {
+    ref.addEventListener('input', e => {
+      state.styling[key] = parser(e.target.value);
+      renderPreview();
+      autosave();
+    });
+  }
+
+  function refreshRender(status = true) {
+    renderPreview();
+    buildPrintRoot();
+    autosave();
+    if (status) setStatus('Rendered');
+  }
+
+  refs.titleInput.addEventListener('input', e => {
+    state.document.title = e.target.value;
+    renderPreview();
+    autosave();
+  });
+
+  refs.addSectionBtn.addEventListener('click', () => {
+    const section = { id: uid(), title: 'New Section', items: [] };
+    state.document.sections.push(section);
+    renderAll();
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-section-id="${section.id}"] .section-editor-header input`)?.select();
+    });
+  });
+
+  refs.orientationButtons.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-orientation]');
+    if (!btn) return;
+    state.document.orientation = btn.dataset.orientation;
+    renderAll();
+    setTimeout(fitPreview, 0);
+  });
+
+  refs.columnsInput.addEventListener('change', e => {
+    state.document.columns = clampInt(e.target.value, 1, 3, 2);
+    renderPreview();
+    autosave();
+  });
+
+  refs.distributionInput.addEventListener('change', e => {
+    state.document.distribution = e.target.value;
+    renderPreview();
+    autosave();
+  });
+
+  bindStyleInput(refs.marginInput, 'pageMargin', v => clampFloat(v, .15, 1.25, .38));
+  bindStyleInput(refs.columnGapInput, 'columnGap', v => clampFloat(v, 0, .75, .18));
+  bindStyleInput(refs.sectionGapInput, 'sectionGap', v => clampFloat(v, 0, .75, .16));
+  bindStyleInput(refs.titleFontInput, 'titleFont');
+  bindStyleInput(refs.titleSizeInput, 'titleSize', v => clampInt(v, 16, 54, 28));
+  bindStyleInput(refs.titleWeightInput, 'titleWeight', v => clampInt(v, 600, 900, 800));
+  bindStyleInput(refs.titleAlignInput, 'titleAlign');
+  bindStyleInput(refs.textColorInput, 'textColor');
+  bindStyleInput(refs.ruleColorInput, 'ruleColor');
+  bindStyleInput(refs.ruleThicknessInput, 'ruleThickness', v => clampInt(v, 0, 10, 3));
+  bindStyleInput(refs.sectionFillInput, 'sectionFill');
+  bindStyleInput(refs.sectionTextInput, 'sectionText');
+  bindStyleInput(refs.cardBorderInput, 'cardBorder');
+  bindStyleInput(refs.rowDividerInput, 'rowDivider');
+  bindStyleInput(refs.radiusInput, 'cardRadius', v => clampInt(v, 0, 30, 12));
+  bindStyleInput(refs.sectionFontSizeInput, 'sectionFontSize', v => clampInt(v, 8, 22, 12));
+  bindStyleInput(refs.itemFontSizeInput, 'itemFontSize', v => clampInt(v, 8, 22, 12));
+  bindStyleInput(refs.rowHeightInput, 'rowHeight', v => clampFloat(v, .2, .6, .3));
+  bindStyleInput(refs.checkSizeInput, 'checkSize', v => clampInt(v, 8, 28, 15));
+  bindStyleInput(refs.checkStrokeInput, 'checkStroke', v => clampFloat(v, 1, 4, 1.7));
+
+  refs.printCopiesInput.addEventListener('input', e => {
+    state.rendering.printCopies = clampInt(e.target.value, 1, 12, 1);
+    e.target.value = state.rendering.printCopies;
+    buildPrintRoot();
+    autosave();
+  });
+
+  refs.printBackgroundsInput.addEventListener('change', e => {
+    state.rendering.printBackgrounds = e.target.checked;
+    buildPrintRoot();
+    autosave();
+  });
+
+  refs.enterRefreshInput.addEventListener('change', e => {
+    state.rendering.enterRefresh = e.target.checked;
+    autosave();
+  });
+
+  refs.refreshRenderBtn.addEventListener('click', () => refreshRender(true));
+
+  refs.applyPresetBtn.addEventListener('click', () => {
+    const preset = presets[refs.presetInput.value];
+    if (!preset) return;
+    Object.assign(state.styling, clone(preset));
+    renderAll();
+    setStatus('Preset applied');
+  });
+
+  refs.zoomInput.addEventListener('input', e => {
+    setPreviewScale(parseInt(e.target.value, 10) / 100);
+  });
+
+  refs.fitBtn.addEventListener('click', fitPreview);
+
+  function setPreviewScale(scale) {
+    const clamped = Math.max(.3, Math.min(1.1, scale));
+    document.documentElement.style.setProperty('--preview-scale', clamped);
+    refs.zoomInput.value = Math.round(clamped * 100);
+    refs.zoomReadout.textContent = Math.round(clamped * 100) + '%';
+  }
+
+  function fitPreview() {
+    const stageRect = refs.stage.getBoundingClientRect();
+    const pageWidth = state.document.orientation === 'landscape' ? 1056 : 816;
+    const pageHeight = state.document.orientation === 'landscape' ? 816 : 1056;
+    const usableW = Math.max(200, stageRect.width - 70);
+    const usableH = Math.max(200, stageRect.height - 70);
+    const scale = Math.min(usableW / pageWidth, usableH / pageHeight, 1);
+    setPreviewScale(scale);
+  }
+
+  refs.newBtn.addEventListener('click', () => {
+    if (!confirm('Start a new checklist? Your current list is still recoverable from any JSON file you saved.')) return;
+    state = defaultState();
+    renderAll();
+    fitPreview();
+    setStatus('New checklist created');
+  });
+
+  refs.saveBtn.addEventListener('click', saveJson);
+
+  function saveJson() {
+    const payload = JSON.stringify(state, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const a = document.createElement('a');
+    const name = slugify(state.document.title || 'checklist') + '.json';
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    setStatus('JSON saved');
+  }
+
+  function slugify(text) {
+    return String(text)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'checklist';
+  }
+
+  refs.loadBtn.addEventListener('click', () => refs.fileInput.click());
+
+  refs.fileInput.addEventListener('change', async e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      state = sanitizeState(JSON.parse(text));
+      renderAll();
+      fitPreview();
+      setStatus('JSON loaded');
+    } catch (err) {
+      alert('That file could not be loaded as a Checklist Maker JSON file.');
+      console.error(err);
+    } finally {
+      refs.fileInput.value = '';
+    }
+  });
+
+  function buildPrintRoot() {
+    applyCssVars();
+    refs.printRoot.innerHTML = '';
+    const copies = clampInt(state.rendering.printCopies, 1, 12, 1);
+    for (let i = 0; i < copies; i++) {
+      const clone = refs.pagePreview.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      refs.printRoot.appendChild(clone);
+    }
+    document.body.classList.toggle('no-print-backgrounds', !state.rendering.printBackgrounds);
+  }
+
+  refs.printBtn.addEventListener('click', () => {
+    refreshRender(false);
+    buildPrintRoot();
+    window.print();
+  });
+
+  window.addEventListener('beforeprint', buildPrintRoot);
+  window.addEventListener('afterprint', () => {
+    refs.printRoot.innerHTML = '';
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || !state.rendering.enterRefresh) return;
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.matches('button, textarea, [contenteditable="true"]')) return;
+    if (target.matches('input, select')) {
+      requestAnimationFrame(() => refreshRender(true));
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window.__fitTimer);
+    window.__fitTimer = setTimeout(() => {
+      if (window.innerWidth > 760) fitPreview();
+    }, 120);
+  });
+
+  // Initial render
+  state = sanitizeState(state);
+  renderAll();
+  requestAnimationFrame(() => {
+    fitPreview();
+    setTimeout(checkOverflow, 150);
+  });
+})();
+</script>
+</body>
+</html>
